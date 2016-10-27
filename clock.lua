@@ -1,0 +1,42 @@
+-- Digital Clock display
+
+require("config")
+lcd = require("lcd")
+
+local clock = {}
+clock.months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+
+function clock:datetime()
+  local result = false
+  local sec, usec = rtctime.get()
+  if sec ~= 0 then
+    local tm = rtctime.epoch2cal(sec + timezone * 3600)
+    lcd:screen(string.format("   %02d %3s %04d  ", tm["day"], self.months[tm["mon"]], tm["year"]),
+               string.format("      %02d:%02d     ", tm["hour"], tm["min"]))
+    result = true
+  end
+  return result
+end
+
+function clock:bigclock()
+  local result = false
+  local sec, usec = rtctime.get()
+  if sec ~= 0 then
+    local tm = rtctime.epoch2cal(sec + timezone * 3600)
+    local text = string.format("%02d:%02d", tm["hour"], tm["min"])
+    bgnum = require("bgnum")
+    bgnum:define()
+    lcd:cls()
+    bgnum:write(text:sub(1, 1), 0)
+    bgnum:write(text:sub(2, 2), 4)
+    bgnum:write(text:sub(3, 3), 7)
+    bgnum:write(text:sub(4, 4), 9)
+    bgnum:write(text:sub(5, 5), 13)
+    unrequire("bgnum")
+    result = true
+  end
+  return result
+end
+
+return clock
+-- vim: set ft=lua ai ts=2 sts=2 et sw=2 sta nowrap nu :
