@@ -43,6 +43,8 @@ function bgnum:write(digit, col)
     lcd:bigwrite({255,3,0}, {255,4,1}, col)
   elseif (digit == ":") then
     lcd:bigwrite({5,6}, {5,6}, col)
+  elseif (digit == ".") then
+    lcd:bigwrite({32,32}, {5,6}, col)
   elseif (digit == "'") then
     lcd:bigwrite({5,6}, {32,32}, col)
   elseif (digit == "%") then
