@@ -21,5 +21,5 @@ adc,bit,cjson,dht,file,gpio,http,i2c,net,node,rc,rtctime,sntp,tmr,uart,wifi
 
 ## Future services
 
-* conversion rates
+* chime
 
