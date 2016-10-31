@@ -1,7 +1,6 @@
 -- IoT
 
 require("config")
-rcs = require("rcs")
 wx = require("wx")
 
 local iot = {}
@@ -14,11 +13,12 @@ function iot:init()
     self.connected = true
     local ssid = wifi.sta.getconfig()
     local ip, nm, gw = wifi.sta.getip()
-    self:pub("node/wifi/ssid", ssid, 1, 1)
-    self:pub("node/wifi/ip", ip, 1, 1)
-    self:pub("node/wifi/gw", gw, 1, 1)
     self:pub("node/wifi/hostname", wifi.sta.gethostname(), 1, 1)
     self:pub("node/wifi/mac", wifi.sta.getmac(), 1, 1)
+    self:pub("node/wifi/ssid", ssid, 1, 1)
+    self:pub("node/wifi/rssi", wifi.sta.getrssi(), 1, 1)
+    self:pub("node/wifi/ip", ip, 1, 1)
+    self:pub("node/wifi/gw", gw, 1, 1)
   end)
   self.client:on("offline", function(client)
     if DEBUG then print("IoT offline") end
@@ -27,20 +27,32 @@ function iot:init()
   self.client:on("message", function(client, topic, msg)
     if msg then
       if DEBUG then print("IoT " .. topic .. ": " .. msg) end
-      local root, sect, id = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
-      if root == "wx" and sect == wx_station then
-        wx:weather(id, msg)
-      elseif root == "eridu" and sect == "rcs" then
-        rcs:button(id, msg)
-      elseif topic == "node/command" then
-        if msg == "restart" then node.restart() end
-      elseif topic == "node/command/debug" then
-        DEBUG = (msg == "on") and true or false
-      elseif topic == "node/command/timezone" then
-        timezone = msg
-      elseif topic == "node/command/ntpsync" then
-        local server = msg and msg or ntp_server
-        sntp.sync(server)
+      local root, trunk, branch, leaf = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
+      if root == "wx" and trunk == wx_station then
+        wx:weather(branch, msg)
+      elseif root == "eridu" and trunk == "rcs" then
+        local rcs = require("rcs")
+        rcs:button(branch, msg)
+        unrequire("rcs")
+      elseif root == "node" and trunk == node.chipid() then
+        if branch == "command" then
+          if leaf == "restart" then
+            node.restart()
+          elseif leaf == "debug" then
+            DEBUG = (msg == "on") and true or false
+          elseif leaf == "timezone" then
+            timezone = msg
+          elseif leaf == "ntpsync" then
+            local server = msg and msg or ntp_server
+            sntp.sync(server)
+          elseif leaf == "beep" then
+            local beep = require("beep")
+            beep:onekhz()
+            unrequire("beep")
+          elseif leaf == "light" then
+            lcd_bl = (msg == "on") and true or false
+          end
+        end
       end
     end
   end)
