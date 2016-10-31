@@ -24,13 +24,8 @@ function clock:bigclock()
   local result = false
   local sec, usec = rtctime.get()
   if sec ~= 0 then
-    if timezone == nil then
-      local tm = rtctime.epoch2cal(sec)
-      local text = string.format("%02d.%02d", tm["hour"], tm["min"])
-    else
-      local tm = rtctime.epoch2cal(sec + timezone * 3600)
-      local text = string.format("%02d:%02d", tm["hour"], tm["min"])
-    end
+    local tm = rtctime.epoch2cal(sec + timezone * 3600)
+    local text = string.format("%02d:%02d", tm["hour"], tm["min"])
     bgnum = require("bgnum")
     bgnum:define()
     lcd:cls()

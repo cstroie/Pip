@@ -13,12 +13,13 @@ function iot:init()
     self.connected = true
     local ssid = wifi.sta.getconfig()
     local ip, nm, gw = wifi.sta.getip()
-    self:pub("node/wifi/hostname", wifi.sta.gethostname(), 1, 1)
-    self:pub("node/wifi/mac", wifi.sta.getmac(), 1, 1)
-    self:pub("node/wifi/ssid", ssid, 1, 1)
-    self:pub("node/wifi/rssi", wifi.sta.getrssi(), 1, 1)
-    self:pub("node/wifi/ip", ip, 1, 1)
-    self:pub("node/wifi/gw", gw, 1, 1)
+    local root = "report/" .. node.chipid() .. "/wifi/"
+    self:pub(root .. "hostname", wifi.sta.gethostname(), 1, 1)
+    self:pub(root .. "mac", wifi.sta.getmac(), 1, 1)
+    self:pub(root .. "ssid", ssid, 1, 1)
+    self:pub(root .. "rssi", wifi.sta.getrssi(), 1, 1)
+    self:pub(root .. "ip", ip, 1, 1)
+    self:pub(root .. "gw", gw, 1, 1)
   end)
   self.client:on("offline", function(client)
     if DEBUG then print("IoT offline") end
@@ -27,29 +28,29 @@ function iot:init()
   self.client:on("message", function(client, topic, msg)
     if msg then
       if DEBUG then print("IoT " .. topic .. ": " .. msg) end
-      local root, trunk, branch, leaf = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
+      local root, trunk, branch = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
       if root == "wx" and trunk == wx_station then
         wx:weather(branch, msg)
-      elseif root == "eridu" and trunk == "rcs" then
-        local rcs = require("rcs")
-        rcs:button(branch, msg)
-        unrequire("rcs")
-      elseif root == "node" and trunk == node.chipid() then
-        if branch == "command" then
-          if leaf == "restart" then
+      elseif root == "command" then
+        if trunk == "rcs" then
+          local rcs = require("rcs")
+          rcs:button(branch, msg)
+          unrequire("rcs")
+        elseif trunk == tostring(node.chipid()) then
+          if branch == "restart" then
             node.restart()
-          elseif leaf == "debug" then
+          elseif branch == "debug" then
             DEBUG = (msg == "on") and true or false
-          elseif leaf == "timezone" then
+          elseif branch == "timezone" then
             timezone = msg
-          elseif leaf == "ntpsync" then
+          elseif branch == "ntpsync" then
             local server = msg and msg or ntp_server
             sntp.sync(server)
-          elseif leaf == "beep" then
+          elseif branch == "beep" then
             local beep = require("beep")
             beep:onekhz()
             unrequire("beep")
-          elseif leaf == "light" then
+          elseif branch == "light" then
             lcd_bl = (msg == "on") and true or false
           end
         end
@@ -65,7 +66,7 @@ function iot:connect()
     function(client)
       if DEBUG then print("IoT initial connection") end
       self.connected = true
-      self.client:subscribe({["eridu/#"] = 1, ["wx/#"] = 1, ["node/#"] = 1})
+      self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
     end,
     function(client, reason)
       if DEBUG then print("IoT failed: " .. reason) end

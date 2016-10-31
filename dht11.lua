@@ -59,11 +59,12 @@ function dht11:pub()
   dht11:read()
   local v = vdd.read()
   if (wifi.sta.status() == 5) and self.temp ~= nil then
-    iot:pub("eridu/indoor/temperature", self.temp)
-    iot:pub("eridu/indoor/humidity", self.hmdt)
-    iot:pub("node/vdd", v)
-    iot:pub("node/heap", node.heap())
-    iot:pub("node/uptime", tmr.time())
+    iot:pub("sensor/indoor/temperature", self.temp)
+    iot:pub("sensor/indoor/humidity", self.hmdt)
+    local root = "report/" .. node.chipid() .. "/"
+    iot:pub(root .. "vdd", v)
+    iot:pub(root .. "heap", node.heap())
+    iot:pub(root .. "uptime", tmr.time())
   end
 end
 
