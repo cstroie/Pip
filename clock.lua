@@ -5,14 +5,16 @@ lcd = require("lcd")
 
 local clock = {}
 clock.months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+clock.days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 
 function clock:datetime()
   local result = false
   local sec, usec = rtctime.get()
   if sec ~= 0 then
     local tm = rtctime.epoch2cal(sec + timezone * 3600)
-    lcd:screen(string.format("   %02d %3s %04d  ", tm["day"], self.months[tm["mon"]], tm["year"]),
-               string.format("      %02d:%02d     ", tm["hour"], tm["min"]))
+    lcd:screen(string.format("%3s, %02d %3s %04d", self.days[tm["wday"]], tm["day"], self.months[tm["mon"]], tm["year"]),
+               string.format("%02d:%02d", tm["hour"], tm["min"]),
+               "c")
     result = true
   end
   return result
@@ -22,8 +24,13 @@ function clock:bigclock()
   local result = false
   local sec, usec = rtctime.get()
   if sec ~= 0 then
-    local tm = rtctime.epoch2cal(sec + timezone * 3600)
-    local text = string.format("%02d:%02d", tm["hour"], tm["min"])
+    if timezone == nil then
+      local tm = rtctime.epoch2cal(sec)
+      local text = string.format("%02d.%02d", tm["hour"], tm["min"])
+    else
+      local tm = rtctime.epoch2cal(sec + timezone * 3600)
+      local text = string.format("%02d:%02d", tm["hour"], tm["min"])
+    end
     bgnum = require("bgnum")
     bgnum:define()
     lcd:cls()
