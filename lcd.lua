@@ -7,18 +7,13 @@ local RS = 0x01  -- Register selector
 local EN = 0x04  -- Write Enable
 local BL = 0x08  -- BackLight
 
--- Backlight switch
-lcd.backlight = BL
-
 function lcd:send(reg, data)
   -- reg: register 0 - instruction, 1 - data (default)
   -- data: table
   local i, byte, ub, lb
   local stream = {}
-  local bl = bit.band(BL, self.backlight)
-  if (reg ~= 1) then
-    reg = 0
-  end
+  local bl = lcd_bl and BL or 0x00
+  if reg ~= 1 then reg = 0 end
   local rs = bit.band(RS, reg)
   for i, byte in pairs(data) do
     ub = bit.band(byte, 0xf0) + bl + rs
@@ -35,10 +30,10 @@ function lcd:send(reg, data)
 end
 
 function lcd:light(onoff)
-  if (onoff == 0) then
-    self.backlight = 0x00
+  if onoff == "on" then
+    lcd_bl = true
   else
-    self.backlight = BL
+    lcd_bl = false
   end
   lcd:send(0, {0x00})
 end
@@ -76,9 +71,7 @@ function lcd:write(text, line, col)
   if (type(text) == "table") then
     lcd:send(1, text)
   else
-    if (type(text) == "number") then
-      text = tostring(text)
-    end
+    if (type(text) == "number") then text = tostring(text) end
     local data = {}
     text:gsub(".", function(c) table.insert(data, c:byte()) end)
     lcd:send(1, data)
