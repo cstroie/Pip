@@ -1,13 +1,9 @@
--- Radio controlled switches on 433MHz
--- Pin: 3
+-- Radio controlled sockets on 433MHz
+
+require("config")
 
 local rcs = {}
-rcs.pin = 3
-rcs.pl = 255
-rcs.proto = 1
-rcs.count = 4
 rcs.sw = {0x004000, 0x010000, 0x040000, 0x100000, 0x400000}
-rcs.dip = 0x1f
 
 function rcs:switch(dip)
   local result = 0x00
@@ -18,23 +14,23 @@ function rcs:switch(dip)
 end
 
 function rcs:on(btn, dip)
-  if dip == nil then dip = self.dip end
-  local code
+  if dip == nil then dip = rcs_dip end
+  local code = 0x000000
   if     btn == "A" then code = 0x000551
   elseif btn == "B" then code = 0x001151
   elseif btn == "C" then code = 0x001451
   elseif btn == "D" then code = 0x001511 end
-  rc.send(self.pin, code + self:switch(dip), 24, self.pl, self.proto, self.count)
+  rc.send(rcs_pin, code + self:switch(dip), rcs_bits, rcs_pl, rcs_proto, rcs_count)
 end
 
 function rcs:off(btn, dip)
-  if dip == nil then dip = self.dip end
-  local code
+  if dip == nil then dip = rcs_dip end
+  local code = 0x000000
   if     btn == "A" then code = 0x000554
   elseif btn == "B" then code = 0x001154
   elseif btn == "C" then code = 0x001454
   elseif btn == "D" then code = 0x00155f end
-  rc.send(self.pin, code + self:switch(dip), 24, self.pl, self.proto, self.count)
+  rc.send(rcs_pin, code + self:switch(dip), rcs_bits, rcs_pl, rcs_proto, rcs_count)
 end
 
 function rcs:button(btn, cmd)
