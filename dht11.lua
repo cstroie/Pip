@@ -61,7 +61,7 @@ function dht11:pub()
   if (wifi.sta.status() == 5) and self.temp ~= nil then
     iot:pub("sensor/indoor/temperature", self.temp)
     iot:pub("sensor/indoor/humidity", self.hmdt)
-    local root = "report/" .. node.chipid() .. "/"
+    local root = "report/" .. NODENAME .. "/"
     iot:pub(root .. "vdd", v)
     iot:pub(root .. "heap", node.heap())
     iot:pub(root .. "uptime", tmr.time())

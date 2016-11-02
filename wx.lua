@@ -7,7 +7,7 @@ local wx = {}
 wx.wthr = {}
 
 function wx:weather(id, msg)
-  msg = msg:gsub(string.char(176), string.char(223))
+  msg = msg:gsub("\176", "\223")
   local ln1, ln2 = string.match(msg, '^(.*), (.*)$')
   self.wthr[id] = {ln1 = ln1, ln2 = ln2}
   if     id == "ton" then self.wthr["tod"] = nil
@@ -58,6 +58,16 @@ function wx:sun()
   local result = false
   if self.wthr.sun then
     lcd:screen(string.format("Sunrise % 8s", self.wthr.sun.ln1), string.format("Sunset  % 8s", self.wthr.sun.ln2))
+    result = true
+  end
+  return result
+end
+
+function wx:moon()
+  local result = false
+  if self.wthr.mon then
+    local full = (tonumber(self.wthr.mon.ln1) + 2) / 4
+    lcd:screen("Moon   [" .. string.rep("\095", 7 - full) .. string.rep("\255", full) .. "]", self.wthr.mon.ln2)
     result = true
   end
   return result

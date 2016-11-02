@@ -13,7 +13,7 @@ function iot:init()
     self.connected = true
     local ssid = wifi.sta.getconfig()
     local ip, nm, gw = wifi.sta.getip()
-    local root = "report/" .. node.chipid() .. "/wifi/"
+    local root = "report/" .. NODENAME .. "/wifi/"
     self:pub(root .. "hostname", wifi.sta.gethostname(), 1, 1)
     self:pub(root .. "mac", wifi.sta.getmac(), 1, 1)
     self:pub(root .. "ssid", ssid, 1, 1)
@@ -36,7 +36,7 @@ function iot:init()
           local rcs = require("rcs")
           rcs:button(branch, msg)
           unrequire("rcs")
-        elseif trunk == tostring(node.chipid()) then
+        elseif trunk == NODENAME then
           if branch == "restart" then
             node.restart()
           elseif branch == "debug" then
