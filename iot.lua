@@ -11,15 +11,6 @@ function iot:init()
   self.client:on("connect", function(client)
     if DEBUG then print("IoT connected") end
     self.connected = true
-    local ssid = wifi.sta.getconfig()
-    local ip, nm, gw = wifi.sta.getip()
-    local root = "report/" .. NODENAME .. "/wifi/"
-    self:pub(root .. "hostname", wifi.sta.gethostname(), 1, 1)
-    self:pub(root .. "mac", wifi.sta.getmac(), 1, 1)
-    self:pub(root .. "ssid", ssid, 1, 1)
-    self:pub(root .. "rssi", wifi.sta.getrssi(), 1, 1)
-    self:pub(root .. "ip", ip, 1, 1)
-    self:pub(root .. "gw", gw, 1, 1)
   end)
   self.client:on("offline", function(client)
     if DEBUG then print("IoT offline") end
@@ -67,6 +58,15 @@ function iot:connect()
       if DEBUG then print("IoT initial connection") end
       self.connected = true
       self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
+      local ssid = wifi.sta.getconfig()
+      local ip, nm, gw = wifi.sta.getip()
+      local root = "report/" .. NODENAME .. "/wifi/"
+      self:pub(root .. "hostname", wifi.sta.gethostname(), 1, 1)
+      self:pub(root .. "mac", wifi.sta.getmac(), 1, 1)
+      self:pub(root .. "ssid", ssid, 1, 1)
+      self:pub(root .. "rssi", wifi.sta.getrssi(), 1, 1)
+      self:pub(root .. "ip", ip, 1, 1)
+      self:pub(root .. "gw", gw, 1, 1)
     end,
     function(client, reason)
       if DEBUG then print("IoT failed: " .. reason) end
