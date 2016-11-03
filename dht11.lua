@@ -1,18 +1,13 @@
 -- Get temperature and humidity using DHT11
 
 require("config")
-lcd = require("lcd")
-vdd = require("vdd")
 iot = require("iot")
 
 local dht11 = {}
-dht11.temp = nil
-dht11.hmdt = nil
-dht11.status = nil
 
 function dht11:read(pin)
-  if pin == nil then pin = dht11_pin end
-  local status, temp, hmdt, temp_dec, hmdt_dec = dht.read(pin)
+  -- Read the DHT11 sensor
+  local status, temp, hmdt, temp_dec, hmdt_dec = dht.read(pin or dht11_pin)
   if status == dht.OK then
     self.temp = temp
     self.hmdt = hmdt
@@ -21,12 +16,13 @@ function dht11:read(pin)
 end
 
 function dht11:bigtemp()
+  -- Display temperature with large LCD digits
   local result = false
   if self.temp ~= nil then
     local text = string.format("% 3d'C", self.temp)
     bgnum = require("bgnum")
     bgnum:define()
-    lcd:cls()
+    bgnum:cls()
     bgnum:write(text:sub(1, 1), 0)
     bgnum:write(text:sub(2, 2), 4)
     bgnum:write(text:sub(3, 3), 8)
@@ -39,12 +35,13 @@ function dht11:bigtemp()
 end
 
 function dht11:bighmdt()
+  -- Display humidity with large LCD digits
   local result = false
   if self.hmdt ~= nil then
     local text = string.format("% 3d%%", self.hmdt)
     bgnum = require("bgnum")
     bgnum:define()
-    lcd:cls()
+    bgnum:cls()
     bgnum:write(text:sub(1, 1), 0)
     bgnum:write(text:sub(2, 2), 4)
     bgnum:write(text:sub(3, 3), 8)
@@ -56,20 +53,18 @@ function dht11:bighmdt()
 end
 
 function dht11:pub()
+  -- MQTT publish telemetry data
   dht11:read()
-  local v = vdd.read()
-  if (wifi.sta.status() == 5) and self.temp ~= nil then
-    iot:pub("sensor/indoor/temperature", self.temp)
-    iot:pub("sensor/indoor/humidity", self.hmdt)
-    local root = "report/" .. NODENAME .. "/"
-    iot:pub(root .. "vdd", v)
-    iot:pub(root .. "heap", node.heap())
-    iot:pub(root .. "uptime", tmr.time())
-  end
+  iot:pub("sensor/indoor/temperature", self.temp)
+  iot:pub("sensor/indoor/humidity", self.hmdt)
+  local root = "report/" .. NODENAME .. "/"
+  iot:pub(root .. "vdd", adc.readvdd33())
+  iot:pub(root .. "heap", node.heap())
+  iot:pub(root .. "uptime", tmr.time())
 end
 
 function dht11:init()
-  --dht11:pub()
+  -- Initialize the timer
   tmr.alarm(3, 1000 * dht11_interval, tmr.ALARM_AUTO, function() dht11:pub() end)
 end
 

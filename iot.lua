@@ -1,4 +1,4 @@
--- IoT
+-- MQTT integration for IoT
 
 require("config")
 wx = require("wx")
@@ -8,17 +8,18 @@ iot.connected = false
 
 function iot:init()
   self.client = mqtt.Client(iot_id, 120, iot_user, iot_pass, 1)
+  self.client:lwt("lwt", NODENAME .. "offline", 0, 0)
   self.client:on("connect", function(client)
-    if DEBUG then print("IoT connected") end
+    debug("IoT connected")
     self.connected = true
   end)
   self.client:on("offline", function(client)
-    if DEBUG then print("IoT offline") end
+    debug("IoT offline")
     self.connected = false
   end)
   self.client:on("message", function(client, topic, msg)
     if msg then
-      if DEBUG then print("IoT " .. topic .. ": " .. msg) end
+      debug("IoT " .. topic .. ": " .. msg)
       local root, trunk, branch = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
       if root == "wx" and trunk == wx_station then
         wx:weather(branch, msg)
@@ -55,7 +56,7 @@ function iot:connect()
     self.client:close()
     self.client:connect(iot_server, iot_port, 0, 1,
     function(client)
-      if DEBUG then print("IoT initial connection") end
+      debug("IoT initial connection")
       self.connected = true
       self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
       local ssid = wifi.sta.getconfig()
@@ -69,17 +70,18 @@ function iot:connect()
       self:pub(root .. "gw", gw, 1, 1)
     end,
     function(client, reason)
-      if DEBUG then print("IoT failed: " .. reason) end
+      debug("IoT failed: " .. reason)
       self.connected = false
     end)
   end
 end
 
 function iot:pub(topic, msg, qos, ret)
-  if qos == nil then qos = 0 end
-  if ret == nil then ret = 0 end
-  if self.connected then
-    if DEBUG then print("IoT publish: " .. topic .. ": ", msg) end
+  -- Publish the message to a topic
+  if wifi.sta.status() == 5 and self.connected and msg ~= nil then
+    qos = qos and qos or 0
+    ret = ret and ret or 0
+    debug("IoT publish: " .. topic .. ": ", msg)
     self.client:publish(topic, msg, qos, ret)
   end
 end

@@ -4,15 +4,10 @@ lcd = require("lcd")
 
 local vdd = {}
 
-function vdd:read()
-  return adc.readvdd33()
-end
-
 function vdd:show()
   local result = false
-  local v = self:read()
 --  if v ~= 65535 then
-    lcd:screen("Vdd:  " .. v .. " mV", "Heap: " .. node.heap() .. " bytes")
+    lcd:screen("Vdd:  " .. adc.readvdd33() .. " mV", "Heap: " .. node.heap() .. " bytes")
     result = true
 --  end
   return result

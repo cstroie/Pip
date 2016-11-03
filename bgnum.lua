@@ -1,8 +1,12 @@
--- LCD big numbers
+-- LCD big numbers and symbols
 
 lcd = require("lcd")
 
 local bgnum = {}
+
+function bgnum:cls()
+  lcd:cls()
+end
 
 function bgnum:define()
   if BIG_CHARS ~= "bgnum" then

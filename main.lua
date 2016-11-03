@@ -5,6 +5,20 @@ function unrequire(m)
   _G[m] = nil
 end
 
+function debug(...)
+  -- Print the message if the global DEBUG flag is on
+  if DEBUG then print(...) end
+end
+
+-- LCD Screens dispatcher
+SCR = {}
+function dispatch(idx)
+  if SCR[idx] then
+    SCR[idx]()
+  end
+end
+
+
 -- Use ADC to read Vdd
 if adc.force_init_mode(adc.INIT_VDD33) then node.restart() end
 -- LCD display
