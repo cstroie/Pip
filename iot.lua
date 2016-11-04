@@ -88,16 +88,16 @@ function iot:mpub(topmsg, qos, ret, btop)
   qos = qos and qos or 0
   ret = ret and ret or 0
   btop = btop:sub(#btop,#btop) ~= "/" and btop .. "/" or btop
-  --if wifi.sta.status() == 5 and self.connected then
+  if wifi.sta.status() == 5 and self.connected then
     for topic, msg in pairs(topmsg) do
       if type(msg) == "table" then
         self:mpub(msg, qos, ret, btopic .. topic)
       else
         print("IoT publish: " .. btop .. topic .. ": ", msg)
-        --self.client:publish(btop .. topic, msg, qos, ret)
+        self.client:publish(btop .. topic, msg, qos, ret)
       end
     end
-  --end
+  end
 end
 
 return iot
