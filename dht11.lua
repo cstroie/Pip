@@ -18,16 +18,12 @@ end
 function dht11:bigtemp()
   -- Display temperature with large LCD digits
   local result = false
-  if self.temp ~= nil then
+  if self.temp then
     local text = string.format("% 3d'C", self.temp)
     bgnum = require("bgnum")
     bgnum:define()
     bgnum:cls()
-    bgnum:write(text:sub(1, 1), 0)
-    bgnum:write(text:sub(2, 2), 4)
-    bgnum:write(text:sub(3, 3), 8)
-    bgnum:write(text:sub(4, 4), 11)
-    bgnum:write(text:sub(5, 5), 13)
+    bgnum:bigwrite(text, {0,4,8,11,13})
     unrequire("bgnum")
     result = true
   end
@@ -37,15 +33,12 @@ end
 function dht11:bighmdt()
   -- Display humidity with large LCD digits
   local result = false
-  if self.hmdt ~= nil then
+  if self.hmdt then
     local text = string.format("% 3d%%", self.hmdt)
     bgnum = require("bgnum")
     bgnum:define()
     bgnum:cls()
-    bgnum:write(text:sub(1, 1), 0)
-    bgnum:write(text:sub(2, 2), 4)
-    bgnum:write(text:sub(3, 3), 8)
-    bgnum:write(text:sub(4, 4), 12)
+    bgnum:bigwrite(text, {0,4,8,12})
     unrequire("bgnum")
     result = true
   end
@@ -55,12 +48,8 @@ end
 function dht11:pub()
   -- MQTT publish telemetry data
   dht11:read()
-  iot:pub("sensor/indoor/temperature", self.temp)
-  iot:pub("sensor/indoor/humidity", self.hmdt)
-  local root = "report/" .. NODENAME .. "/"
-  iot:pub(root .. "vdd", adc.readvdd33())
-  iot:pub(root .. "heap", node.heap())
-  iot:pub(root .. "uptime", tmr.time())
+  iot:mpub({temperature = self.temp, humidity = self.hmdt}, 0, 0, "sensor/indoor/")
+  iot:mpub({vdd = adc.readvdd33(), heap = node.heap(), uptime = tmr.time()}, 0, 0, "report/" .. NODENAME)
 end
 
 function dht11:init()

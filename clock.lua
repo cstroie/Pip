@@ -8,6 +8,7 @@ clock.months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 clock.days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 
 function clock:datetime()
+  -- Display the date and time
   local result = false
   local sec, usec = rtctime.get()
   if sec ~= 0 then
@@ -21,6 +22,7 @@ function clock:datetime()
 end
 
 function clock:bigclock()
+  -- Display a big clock
   local result = false
   local sec, usec = rtctime.get()
   if sec ~= 0 then
@@ -29,11 +31,7 @@ function clock:bigclock()
     bgnum = require("bgnum")
     bgnum:define()
     lcd:cls()
-    bgnum:write(text:sub(1, 1), 0)
-    bgnum:write(text:sub(2, 2), 4)
-    bgnum:write(text:sub(3, 3), 7)
-    bgnum:write(text:sub(4, 4), 9)
-    bgnum:write(text:sub(5, 5), 13)
+    bgnum:bigwrite(text, {0,4,7,9,13})
     unrequire("bgnum")
     result = true
   end
