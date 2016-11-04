@@ -61,13 +61,10 @@ function iot:connect()
       self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
       local ssid = wifi.sta.getconfig()
       local ip, nm, gw = wifi.sta.getip()
-      local root = "report/" .. NODENAME .. "/wifi/"
-      self:pub(root .. "hostname", wifi.sta.gethostname(), 1, 1)
-      self:pub(root .. "mac", wifi.sta.getmac(), 1, 1)
-      self:pub(root .. "ssid", ssid, 1, 1)
-      self:pub(root .. "rssi", wifi.sta.getrssi(), 1, 1)
-      self:pub(root .. "ip", ip, 1, 1)
-      self:pub(root .. "gw", gw, 1, 1)
+      local topmsg = {hostname = wifi.sta.gethostname(), mac = wifi.sta.getmac(),
+                      ssid = ssid, rssi = wifi.sta.getrssi(), ip = ip, gw = gw}
+      local sec, usec = rtctime.get()
+      iot:mpub({wifi = topmsg, time = sec}, 1, 1, "report/" .. NODENAME)
     end,
     function(client, reason)
       debug("IoT failed: " .. reason)
@@ -84,6 +81,23 @@ function iot:pub(topic, msg, qos, ret)
     debug("IoT publish: " .. topic .. ": ", msg)
     self.client:publish(topic, msg, qos, ret)
   end
+end
+
+function iot:mpub(topmsg, qos, ret, btop)
+  -- Publish the messages to their topics
+  qos = qos and qos or 0
+  ret = ret and ret or 0
+  btop = btop:sub(#btop,#btop) ~= "/" and btop .. "/" or btop
+  --if wifi.sta.status() == 5 and self.connected then
+    for topic, msg in pairs(topmsg) do
+      if type(msg) == "table" then
+        self:mpub(msg, qos, ret, btopic .. topic)
+      else
+        print("IoT publish: " .. btop .. topic .. ": ", msg)
+        --self.client:publish(btop .. topic, msg, qos, ret)
+      end
+    end
+  --end
 end
 
 return iot
