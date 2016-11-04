@@ -5,6 +5,8 @@ wx = require("wx")
 
 local iot = {}
 iot.connected = false
+iot.queue = {}
+iot.mqueue = {}
 
 function iot:init()
   self.client = mqtt.Client(iot_id, 120, iot_user, iot_pass, 1)
@@ -65,6 +67,8 @@ function iot:connect()
                       ssid = ssid, rssi = wifi.sta.getrssi(), ip = ip, gw = gw}
       local sec, usec = rtctime.get()
       iot:mpub({wifi = topmsg, time = sec}, 1, 1, "report/" .. NODENAME)
+      --for k,v in pairs(iot.queue) do iot:pub(unpack(v)) end
+      --for k,v in pairs(iot.mqueue) do iot:mpub(unpack(v)) end
     end,
     function(client, reason)
       debug("IoT failed: " .. reason)
@@ -78,6 +82,7 @@ end
 function iot:pub(topic, msg, qos, ret)
   -- Publish the message to a topic
   if not self.connected then
+    --table.insert(iot.queue, {topic, msg, qos, ret})
     self:connect()
   elseif wifi.sta.status() == 5 then
     qos = qos and qos or 0
@@ -91,6 +96,7 @@ end
 function iot:mpub(topmsg, qos, ret, btop)
   -- Publish the messages to their topics
   if not self.connected then
+    --table.insert(iot.mqueue, {topmsg, qos, ret, btop})
     self:connect()
   elseif wifi.sta.status() == 5 then
     qos = qos and qos or 0
