@@ -8,7 +8,7 @@ iot.connected = false
 
 function iot:init()
   self.client = mqtt.Client(iot_id, 120, iot_user, iot_pass, 1)
-  self.client:lwt("lwt", NODENAME .. "offline", 0, 0)
+  self.client:lwt("lwt", NODENAME .. " is offline", 0, 0)
   self.client:on("connect", function(client)
     debug("IoT connected")
     self.connected = true
@@ -70,14 +70,19 @@ function iot:connect()
       debug("IoT failed: " .. reason)
       self.connected = false
     end)
+  else
+    self.connected = false
   end
 end
 
 function iot:pub(topic, msg, qos, ret)
   -- Publish the message to a topic
-  if wifi.sta.status() == 5 and self.connected and msg ~= nil then
+  if not self.connected then
+    self:connect()
+  elseif wifi.sta.status() == 5 then
     qos = qos and qos or 0
     ret = ret and ret or 0
+    msg = msg on ""
     debug("IoT publish: " .. topic .. ": ", msg)
     self.client:publish(topic, msg, qos, ret)
   end
@@ -85,14 +90,17 @@ end
 
 function iot:mpub(topmsg, qos, ret, btop)
   -- Publish the messages to their topics
-  qos = qos and qos or 0
-  ret = ret and ret or 0
-  btop = btop:sub(#btop,#btop) ~= "/" and btop .. "/" or btop
-  if wifi.sta.status() == 5 and self.connected then
+  if not self.connected then
+    self:connect()
+  elseif wifi.sta.status() == 5 then
+    qos = qos and qos or 0
+    ret = ret and ret or 0
+    btop = btop:sub(#btop,#btop) ~= "/" and btop .. "/" or btop
     for topic, msg in pairs(topmsg) do
       if type(msg) == "table" then
         self:mpub(msg, qos, ret, btopic .. topic)
       else
+        msg = msg on ""
         print("IoT publish: " .. btop .. topic .. ": ", msg)
         self.client:publish(btop .. topic, msg, qos, ret)
       end
