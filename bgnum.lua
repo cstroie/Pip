@@ -5,10 +5,12 @@ lcd = require("lcd")
 local bgnum = {}
 
 function bgnum:cls()
+  -- Wrapper
   lcd:cls()
 end
 
 function bgnum:define()
+  -- Define the big digits
   if BIG_CHARS ~= "bgnum" then
     lcd:defchar(0, {0x1f,0x1f,0x1f,0x00,0x00,0x00,0x00,0x00})
     lcd:defchar(1, {0x00,0x00,0x00,0x00,0x00,0x1f,0x1f,0x1f})
@@ -23,6 +25,7 @@ function bgnum:define()
 end
 
 function bgnum:write(digit, col)
+  -- Write the digit at 'col'
   if (digit == "0") then
     lcd:bigwrite({255,3,255}, {255,4,255}, col)
   elseif (digit == "1") then
@@ -57,6 +60,13 @@ function bgnum:write(digit, col)
     lcd:bigwrite({32,1,1}, {32,32,32}, col)
   elseif (digit == " ") then
     lcd:bigwrite({32,32,32}, {32,32,32}, col)
+  end
+end
+
+function bgnum:bigwrite(text, cols)
+  -- Write the text, big, at columns 'cols'
+  for idx,col in ipairs(cols) do
+    self:write(text:sub(idx, idx), col)
   end
 end
 
