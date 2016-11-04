@@ -11,37 +11,42 @@ local rstatus, rmodule = pcall(require, 'mosquitto')
 mosquitto = rstatus and rmodule or nil
 
 -- ThingSpeak
-ts = {["api_key"] = ts_wkey}
-sf = {["private_key"] = sf_pvkey}
+ts = {api_key = ts_wkey}
+sf = {private_key = sf_pvkey}
 
 -- MQTT
-if mosquitto ~= nil then
+if mosquitto then
   client = mosquitto.new()
   client.ON_CONNECT = function()
     client:subscribe("#", 0)
   end
 
   client.ON_MESSAGE = function(mid, topic, payload)
-    --print(topic, payload)
-    if     topic == "eridu/indoor/temperature" then
+    print(topic, payload)
+    if     topic == "sensor/indoor/temperature" then
       ts["field1"] = payload
       sf["temp"] = payload
-    elseif topic == "eridu/indoor/humidity" then
+    elseif topic == "sensor/outdoor/temperature" then
+      ts["field6"] = payload
+      --sf["temp"] = payload
+    elseif topic == "sensor/indoor/humidity" then
       ts["field2"] = payload
       sf["hmdt"] = payload
-    elseif topic == "node/vdd" then
+    elseif topic == "report/pip/vdd" then
       ts["field3"] = payload
       sf["vdd"] = payload
-    elseif topic == "node/heap" then
+    elseif topic == "report/pip/heap" then
       ts["field4"] = payload
       sf["heap"] = payload
-    elseif topic == "node/uptime" then
+    elseif topic == "report/pip/uptime" then
       ts["field5"] = payload
       sf["uptime"] = payload
-      -- ThingSpean
+      -- ThingSpeak
       tsbody = ""
       for k,v in pairs(ts) do tsbody = tsbody .. "&" .. k .. "=" .. v end
+      --print(tsbody:sub(2))
       local rspbody, rspcode, rsphdrs = http.request("https://api.thingspeak.com/update", tsbody:sub(2))
+      --print(rspbody, rspcode, rsphdrs)
       -- SparkFun
       sfbody = ""
       for k,v in pairs(sf) do sfbody = sfbody .. "&" .. k .. "=" .. v end
