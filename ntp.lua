@@ -1,29 +1,26 @@
--- Sync to NTP and print time
+-- Time sync using NTP
 
 require("config")
 
 local ntp = {}
 
 function ntp:sync()
+  -- Time sync using the specified server, then the gateway
   if wifi.sta.status() == 5 then
     sntp.sync(ntp_server,
     function(sec, usec, server)
-      if DEBUG then
-        local tm = rtctime.epoch2cal(sec)
-        print("Time sync to " .. server .. ": " .. string.format("%04d.%02d.%02d %02d:%02d:%02d UTC", tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"]))
-      end
+      debug("Time sync to " .. server .. ": " .. sec)
     end,
     function(errcode)
-      if DEBUG then print("Time sync failed: " .. errcode) end
+      debug("Time sync failed: " .. errcode)
       local ip, nm, gw = wifi.sta.getip()
-      if gw ~= nil then
-        sntp.sync(gw)
-      end
+      if gw then sntp.sync(gw) end
     end)
   end
 end
 
 function ntp:init()
+  -- Init the NTP sync timer
   tmr.alarm(2, 1000 * ntp_interval, tmr.ALARM_AUTO, function() ntp:sync() end)
 end
 
