@@ -27,6 +27,7 @@ lcd:init()
 lcd:screen(wifi.sta.gethostname(), string.gsub(wifi.sta.getmac(), ":", ""), "c")
 -- Radio command
 rcs = require("rcs")
+unrequire("rcs")
 -- The big digital clock
 clock = require("clock")
 -- NTP sync

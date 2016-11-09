@@ -107,7 +107,7 @@ function iot:mpub(topmsg, qos, ret, btop)
         self:mpub(msg, qos, ret, btop .. topic)
       else
         msg = msg or ""
-        print("IoT publish: " .. btop .. topic .. ": ", msg)
+        debug("IoT publish: " .. btop .. topic .. ": ", msg)
         self.client:publish(btop .. topic, msg, qos, ret)
       end
     end
