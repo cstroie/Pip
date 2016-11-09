@@ -27,7 +27,8 @@ function rcs:send(bits)
       table.insert(delays, LG)
     end
   end
-  table.insert(delays, 100000)
+  table.remove(delays)
+  table.insert(delays, 10 * (LG + SH))
   gpio.mode(rcs_pin, gpio.OUTPUT)
   gpio.write(rcs_pin, gpio.LOW)
   gpio.serout(rcs_pin, gpio.HIGH, delays, rcs_count, 1)
@@ -56,7 +57,12 @@ function rcs:button(btn, cmd, dip)
   cmd = cmd:upper()
   dip = dip or rcs_dip
   debug("RCS " .. btn .. ": " .. cmd)
-  local code = rcs[cmd][btn] or 0x000000
+  local code
+  if rcs[cmd] and rcs[cmd][btn] then
+    code = rcs[cmd][btn]
+  else
+    code = 0x000000
+  end
   self:send(code + self:switch(dip))
 end
 

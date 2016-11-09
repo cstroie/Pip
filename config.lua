@@ -32,12 +32,12 @@ iot_user = "MQTT_USER"
 iot_pass = "MQTT_PASS"
 
 -- Beep
-beep_pin = 3
+beep_pin = 10
 beep_pls = 500
 beep_rpt = 100
 
 -- RCS
-rcs_pin = 0
+rcs_pin = 3
 rcs_pl = 320
 rcs_bits = 24
 rcs_proto = 1

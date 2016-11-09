@@ -25,6 +25,8 @@ if adc.force_init_mode(adc.INIT_VDD33) then node.restart() end
 lcd = require("lcd")
 lcd:init()
 lcd:screen(wifi.sta.gethostname(), string.gsub(wifi.sta.getmac(), ":", ""), "c")
+-- Radio command
+rcs = require("rcs")
 -- The big digital clock
 clock = require("clock")
 -- NTP sync
