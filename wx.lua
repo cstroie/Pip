@@ -7,12 +7,13 @@ local wx = {}
 wx.wthr = {}
 
 function wx:weather(id, msg)
-  msg = msg:gsub("\176", "\223")
+  msg = msg:gsub("\194\176", "\223")  -- UTF8
+  msg = msg:gsub("\176", "\223")      -- Latin1
   local ln1, ln2 = string.match(msg, '^(.*), (.*)$')
   self.wthr[id] = {ln1 = ln1, ln2 = ln2}
   if     id == "ton" then self.wthr["tod"] = nil
   elseif id == "tod" then self.wthr["ton"] = nil
-  elseif id == "tmz" then timezone = ln2 end
+  elseif id == "tmz" then timezone = tonumber(ln2) end
 end
 
 function wx:now()

@@ -29,7 +29,7 @@ if http_code == 200 then
   local xpth = xpath.selectNodes
 
   -- Degree °, Latin-1 176, LCD 223
-  local dg = string.char(176)
+  local dg = "\194\176"
   local ut = xpth(wx_lom, '/weather/head/ut/text()')[1]
   local up = xpth(wx_lom, '/weather/head/up/text()')[1]
   local dn, tc
