@@ -101,10 +101,12 @@ function lcd:screen(line1, line2, align1, align2)
   lcd:writeline(line2, 2, align2)
 end
 
-function lcd:defchar(num, data)
+function lcd:defchar(num, hexdata)
   -- Define a big character
   -- num: char number 0-7
   -- data: table 8 lines x 5 bits
+  local data = {}
+  for i=1,8 do data[i] = tonumber(string.sub(hexdata, i+i-1, i+i), 16) end
   lcd:send(0, {0x40 + 8 * num})
   lcd:send(1, data)
 end
