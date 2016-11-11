@@ -67,8 +67,27 @@ end
 function wx:moon()
   local result = false
   if self.wthr.mon then
-    local full = (tonumber(self.wthr.mon.ln1) + 2) / 4
-    lcd:screen("Moon   [" .. string.rep("\095", 7 - full) .. string.rep("\255", full) .. "]", self.wthr.mon.ln2)
+    local ph
+    local wxph = tonumber(self.wthr.mon.ln1)
+    if     wxph < 2  then ph = 1
+    elseif wxph < 4  then ph = 2
+    elseif wxph < 6  then ph = 3
+    elseif wxph < 9  then ph = 4
+    elseif wxph < 11 then ph = 5
+    elseif wxph < 13 then ph = 6
+    elseif wxph < 16 then ph = 7
+    elseif wxph < 18 then ph = 8
+    elseif wxph < 20 then ph = 9
+    elseif wxph < 23 then ph = 10
+    elseif wxph < 25 then ph = 11
+    elseif wxph < 27 then ph = 12
+    else ph = 1
+    end
+    local w1, w2 = string.match(self.wthr.mon.ln2, '^(.*) (.*)$')
+    lcd:screen(w1, w2)
+    bgmoon = require("bgmoon")
+    bgmoon:write(ph, 12)
+    unrequire("bgmoon")
     result = true
   end
   return result

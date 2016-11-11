@@ -4,11 +4,6 @@ lcd = require("lcd")
 
 local bgmoon = {}
 
-function bgmoon:cls()
-  -- Wrapper
-  lcd:cls()
-end
-
 function bgmoon:define(ph)
   -- Define the big Moon phases
   local xxdata = {}
