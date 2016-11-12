@@ -22,14 +22,10 @@ function bgmoon:define(ph)
   local BIG_MOON = "bgmoon" .. tostring(ph)
   if BIG_CHARS ~= BIG_MOON then
     for k,xx in ipairs(xxdata[ph]) do
-      local upchar, dnchar = {}, {}
-      for i=1,8 do
-        local x = tonumber(string.sub(xx,i+i-1,i+i), 16)
-        upchar[i] = x
-        dnchar[9-i] = x
-      end
-      lcd:defchar(k-1, upchar)
-      lcd:defchar(6-k, dnchar)
+      local revxx = ""
+      for i=8,1,-1 do revxx = revxx .. string.sub(xx,i+i-1,i+i) end
+      lcd:defchar(k-1, xx)
+      lcd:defchar(k+2, revxx)
     end
     BIG_CHARS = BIG_MOON
   end
