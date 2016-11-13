@@ -1,5 +1,8 @@
 -- Main configuration
 
+-- Device name
+NODENAME = "NodeMCU"
+
 -- WiFi
 wl_ap = {}
 wl_ap["ssid"] = "pass"
@@ -25,8 +28,8 @@ dht11_interval = "60"
 wx_station = "ROXX0003"
 
 -- IoT MQTT
-iot_server = "m21.cloudmqtt.com"
-iot_port = 17223
+iot_server = "mqtt.example.com"
+iot_port = 1883
 iot_id = "MQTT_ID"
 iot_user = "MQTT_USER"
 iot_pass = "MQTT_PASS"
