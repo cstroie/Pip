@@ -9,6 +9,7 @@ rcs.OFF = {A = 0x000554, B = 0x001154, C = 0x001454, D = 0x00155f}
 
 function rcs:send(bits)
   -- rc.send(rcs_pin, bits, rcs_bits, rcs_pl, rcs_proto, rcs_count)
+  debug("RCS code: " .. bits)
   local delays = {}
   local SH, LG
   if rcs_proto == 1 then
