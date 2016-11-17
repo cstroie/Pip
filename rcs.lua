@@ -58,13 +58,14 @@ function rcs:button(btn, cmd, dip)
   cmd = cmd:upper()
   dip = dip or rcs_dip
   debug("RCS " .. btn .. ": " .. cmd)
-  local code
-  if rcs[cmd] and rcs[cmd][btn] then
-    code = rcs[cmd][btn]
-  else
-    code = 0x000000
+  if cmd == "ON" or cmd == "OFF" then
+    if btn == "ALL" then
+      for k,v in pairs(rcs[cmd]) do self:button(k, cmd, dip) end
+    else
+      local code = rcs[cmd][btn]
+      if code then self:send(code + self:switch(dip)) end
+    end
   end
-  self:send(code + self:switch(dip))
 end
 
 -- Init TX
