@@ -84,6 +84,10 @@ function wx:moon()
     else ph = 1
     end
     local w1, w2 = string.match(self.wthr.mon.ln2, '^(.*) (.*)$')
+    if not w1 then
+      w1 = self.wthr.mon.ln2
+      w2 = "Moon"
+    end
     lcd:screen(w1, w2)
     bgmoon = require("bgmoon")
     bgmoon:write(ph, 12)
