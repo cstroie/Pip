@@ -19,6 +19,13 @@ wthr = {}
 -- Download WX data
 local response, http_code, http_headers = http.request(wx_url)
 
+function time12to24(time)
+  -- Convert time from 12 to 24 hours format
+  local hours, minutes, ampm = string.match(time, "(%d+):(%d+) (%a+)")
+  if ampm:upper() == "PM" then hours = hours + 12 end
+  return string.format("%02d:%02d", tonumber(hours), tonumber(minutes))
+end
+
 -- Check http code
 if http_code == 200 then
   -- Beautify
@@ -59,11 +66,11 @@ if http_code == 200 then
   local bar_dir = xpth(wx_lom, '/weather/cc/bar/d/text()')[1]
   if bar_dir == nil then bar_dir = "steady" end
   wthr["bar"] = xpth(wx_lom, '/weather/cc/bar/r/text()')[1] .. up .. ", " .. bar_dir
-  wthr["sun"] = xpth(wx_lom, '/weather/loc/sunr/text()')[1] .. ", " ..
-                xpth(wx_lom, '/weather/loc/suns/text()')[1]
+  wthr["sun"] = time12to24(xpth(wx_lom, '/weather/loc/sunr/text()')[1]) .. ", " ..
+                time12to24(xpth(wx_lom, '/weather/loc/suns/text()')[1])
   wthr["mon"] = xpth(wx_lom, '/weather/cc/moon/icon/text()')[1] .. ", " ..
                 xpth(wx_lom, '/weather/cc/moon/t/text()')[1]
-  wthr["tmz"] = xpth(wx_lom, '/weather/loc/tm/text()')[1] .. ", " ..
+  wthr["tmz"] = time12to24(xpth(wx_lom, '/weather/loc/tm/text()')[1]) .. ", " ..
                 xpth(wx_lom, '/weather/loc/zone/text()')[1]
 
 
