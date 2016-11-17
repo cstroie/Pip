@@ -5,14 +5,16 @@ require("config")
 
 -- Standard modules
 http = require("socket.http")
+stathat = require("stathat")
 
 -- Mosquitto
 local rstatus, rmodule = pcall(require, 'mosquitto')
 mosquitto = rstatus and rmodule or nil
 
--- ThingSpeak
+-- Keys
 ts = {api_key = ts_wkey}
 sf = {private_key = sf_pvkey}
+stathat_key = "KEY"
 
 -- MQTT
 if mosquitto then
@@ -26,12 +28,14 @@ if mosquitto then
     if     topic == "sensor/indoor/temperature" then
       ts["field1"] = payload
       sf["temp"] = payload
+      stathat.ez_value(stathat_key, "Indoor Temperature", payload)
     elseif topic == "sensor/outdoor/temperature" then
       ts["field6"] = payload
       --sf["temp"] = payload
     elseif topic == "sensor/indoor/humidity" then
       ts["field2"] = payload
       sf["hmdt"] = payload
+      stathat.ez_value(stathat_key, "Indoor Humidity", payload)
     elseif topic == "report/pip/vdd" then
       ts["field3"] = payload
       sf["vdd"] = payload
