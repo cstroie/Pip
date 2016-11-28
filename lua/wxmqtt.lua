@@ -90,8 +90,9 @@ if http_code == 200 then
 
   -- Lights on / off
   lights = nil
-  if minutes(wxtime) > minutes(wxsunr) and minutes(wxtime) < minutes(wxsunr) + 60 then lights = false end
-  if minutes(wxtime) > minutes(wxsuns) + 60 and minutes(wxtime) < minutes(wxsuns) + 120 then lights = true end
+  local min_time, min_sunr, min_suns = minutes(wxtime), minutes(wxsunr), minutes(wxsuns)
+  if min_time > min_sunr - 30 and min_time < min_sunr + 30 then lights = false end
+  if min_time > min_suns - 30 and min_time < min_suns + 30 then lights = true end
   print("Lights", lights, minutes(wxtime), minutes(wxsunr), minutes(wxsuns))
 
   -- Debug
