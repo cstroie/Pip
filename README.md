@@ -2,7 +2,7 @@
 
 ## Modules
 
-adc,bit,cjson,dht,file,gpio,http,i2c,net,node,rc,rtctime,sntp,tmr,uart,wifi
+adc,bit,dht,file,gpio,i2c,mqtt,net,node,rtctime,sntp,tmr,uart,wifi
 
 ## Sensors
 
