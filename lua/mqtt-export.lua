@@ -1,7 +1,9 @@
 #!/usr/bin/lua
 -- Post data from MQTT
 
-require("config")
+-- Credentials
+local ppath, pname, pext = string.match(arg[0], "(.-)([^\\/]-%.?([^%.\\/]*))$")
+dofile(os.getenv("HOME") .. "/.keys-" .. pname)
 
 -- Standard modules
 http = require("socket.http")
@@ -11,13 +13,13 @@ stathat = require("stathat")
 local rstatus, rmodule = pcall(require, 'mosquitto')
 mosquitto = rstatus and rmodule or nil
 
--- Keys
-ts = {api_key = ts_wkey}
-sf = {private_key = sf_pvkey}
-stathat_key = "KEY"
+-- ThingSpeak, SparkFun, StatHat
+ts = {api_key = THINGSPEAK_KEY}
+sf = {private_key = SPARKFUN_KEY}
+stathat_key = STATHAT_KEY
 
 -- MQTT
-if mosquitto then
+if mosquitto ~= nil then
   client = mosquitto.new()
   client.ON_CONNECT = function()
     client:subscribe("#", 0)
@@ -28,14 +30,17 @@ if mosquitto then
     if     topic == "sensor/indoor/temperature" then
       ts["field1"] = payload
       sf["temp"] = payload
-      stathat.ez_value(stathat_key, "Indoor Temperature", payload)
+      stathat.ez_value(stathat_key, "Indoor Temperature", payload);
     elseif topic == "sensor/outdoor/temperature" then
       ts["field6"] = payload
+      local r = 98.2/(1024/payload - 1)
+      t = 1/(1/298.15 + math.log(r/10.63)/3986)-273.15
+      ts["field7"] = t
       --sf["temp"] = payload
     elseif topic == "sensor/indoor/humidity" then
       ts["field2"] = payload
       sf["hmdt"] = payload
-      stathat.ez_value(stathat_key, "Indoor Humidity", payload)
+      stathat.ez_value(stathat_key, "Indoor Humidity", payload);
     elseif topic == "report/pip/vdd" then
       ts["field3"] = payload
       sf["vdd"] = payload
@@ -54,7 +59,7 @@ if mosquitto then
       -- SparkFun
       sfbody = ""
       for k,v in pairs(sf) do sfbody = sfbody .. "&" .. k .. "=" .. v end
-      local rspbody, rspcode, rsphdrs = http.request("https://data.sparkfun.com/input/" .. sf_pbkey .. "?" .. sfbody:sub(2))
+      local rspbody, rspcode, rsphdrs = http.request("https://data.sparkfun.com/input/" .. SPARKFUN_PUBKEY .. "?" .. sfbody:sub(2))
     end
   end
 
