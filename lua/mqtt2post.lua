@@ -3,20 +3,16 @@
 
 -- Credentials
 local ppath, pname, pext = string.match(arg[0], "(.-)([^\\/]-%.?([^%.\\/]*))$")
-dofile(os.getenv("HOME") .. "/.keys-" .. pname)
+dofile("/etc/keys-" .. pname)
 
 -- Standard modules
 http = require("socket.http")
+thingspeak = require("thingspeak")
 stathat = require("stathat")
 
 -- Mosquitto
 local rstatus, rmodule = pcall(require, 'mosquitto')
 mosquitto = rstatus and rmodule or nil
-
--- ThingSpeak, SparkFun, StatHat
-ts = {api_key = THINGSPEAK_KEY}
-sf = {private_key = SPARKFUN_KEY}
-stathat_key = STATHAT_KEY
 
 -- MQTT
 if mosquitto ~= nil then
@@ -28,38 +24,27 @@ if mosquitto ~= nil then
   client.ON_MESSAGE = function(mid, topic, payload)
     print(topic, payload)
     if     topic == "sensor/indoor/temperature" then
-      ts["field1"] = payload
-      sf["temp"] = payload
-      stathat.ez_value(stathat_key, "Indoor Temperature", payload);
+      thingspeak:collect("field1", payload)
+      stathat.ez_value(STATHAT_KEY, "Indoor Temperature", payload)
     elseif topic == "sensor/outdoor/temperature" then
-      ts["field6"] = payload
-      local r = 98.2/(1024/payload - 1)
-      t = 1/(1/298.15 + math.log(r/10.63)/3986)-273.15
-      ts["field7"] = t
-      --sf["temp"] = payload
+      local R = 98.2/(1024/payload - 1)
+      local T = 1/(1/298.15 + math.log(R/10.63)/3986)-273.15
+      thingspeak:collect("field6", payload)
+      thingspeak:collect("field7", T)
+      client:publish("sensor/outdoor/th", T)
     elseif topic == "sensor/indoor/humidity" then
-      ts["field2"] = payload
-      sf["hmdt"] = payload
-      stathat.ez_value(stathat_key, "Indoor Humidity", payload);
+      thingspeak:collect("field2", payload)
+      stathat.ez_value(STATHAT_KEY, "Indoor Humidity", payload);
     elseif topic == "report/pip/vdd" then
-      ts["field3"] = payload
-      sf["vdd"] = payload
+      thingspeak:collect("field3", payload)
     elseif topic == "report/pip/heap" then
-      ts["field4"] = payload
-      sf["heap"] = payload
+      thingspeak:collect("field4", payload)
     elseif topic == "report/pip/uptime" then
-      ts["field5"] = payload
-      sf["uptime"] = payload
-      -- ThingSpeak
-      tsbody = ""
-      for k,v in pairs(ts) do tsbody = tsbody .. "&" .. k .. "=" .. v end
-      --print(tsbody:sub(2))
-      local rspbody, rspcode, rsphdrs = http.request("https://api.thingspeak.com/update", tsbody:sub(2))
-      --print(rspbody, rspcode, rsphdrs)
-      -- SparkFun
-      sfbody = ""
-      for k,v in pairs(sf) do sfbody = sfbody .. "&" .. k .. "=" .. v end
-      local rspbody, rspcode, rsphdrs = http.request("https://data.sparkfun.com/input/" .. SPARKFUN_PUBKEY .. "?" .. sfbody:sub(2))
+      thingspeak:collect("field5", payload)
+      thingspeak:post(THINGSPEAK_KEY)
+      thingspeak:clear()
+    elseif topic == "report/pop/uptime" then
+      thingspeak:collect("status", "POP: " .. payload)
     end
   end
 
