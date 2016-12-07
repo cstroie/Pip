@@ -1,13 +1,23 @@
 #!/usr/bin/lua
--- WX data
+-- Publish weather data
 
+-- WX data
 wx_id = "ROXX0003"
 wx_url = "http://wxdata.weather.com/wxdata/weather/local/" .. wx_id .. "?cc=*&unit=m&dayf=3"
 
+-- RCS
+rcs = {"a", "b", "c"}
+
 -- Standard modules
 http = require("socket.http")
+socket = require("socket")
 lom = require("lxp.lom")
 xpath = require("xpath")
+
+-- Sleep
+function sleep(sec)
+  socket.select(nil, nil, sec)
+end
 
 -- Mosquitto
 local rstatus, rmodule = pcall(require, 'mosquitto')
@@ -95,8 +105,9 @@ if http_code == 200 then
   if min_time > min_suns - 30 and min_time < min_suns + 30 then lights = true end
   print("Lights", lights, minutes(wxtime), minutes(wxsunr), minutes(wxsuns))
 
-  -- Debug
+  -- Show and count the messages to send
   for k,v in pairs(wthr) do print(k,v) end
+  local mqttpubmsg = 0
 
   -- MQTT
   if mosquitto ~= nil then
@@ -106,18 +117,28 @@ if http_code == 200 then
       local retain = true
       local basetopic = "wx/" .. wx_id .. "/"
       for topic, message in pairs(wthr) do
+        mqttpubmsg = mqttpubmsg + 1
         client:publish(basetopic .. topic, message, qos, retain)
       end
       -- Lights
       if lights == true then
-        client:publish("command/rcs/a", "on", 0, 0)
+        for _, button in pairs(rcs) do
+          mqttpubmsg = mqttpubmsg + 1
+          client:publish("command/rcs/" .. button, "on", qos, retain)
+        end
       elseif lights == false then
-        client:publish("command/rcs/a", "off", 0, 0)
+        for _, button in pairs(rcs) do
+          mqttpubmsg = mqttpubmsg + 1
+          client:publish("command/rcs/" .. button, "off", qos, retain)
+        end
       end
     end
 
     client.ON_PUBLISH = function()
-      client:disconnect()
+      mqttpubmsg = mqttpubmsg - 1
+      if mqttpubmsg < 1 then
+        client:disconnect()
+      end
     end
 
     broker = "localhost"
