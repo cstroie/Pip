@@ -6,7 +6,7 @@ wx_id = "ROXX0003"
 wx_url = "http://wxdata.weather.com/wxdata/weather/local/" .. wx_id .. "?cc=*&unit=m&dayf=3"
 
 -- RCS
-rcs = {"a", "b", "c"}
+rcs = {"a"}
 
 -- Standard modules
 http = require("socket.http")
