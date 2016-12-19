@@ -29,7 +29,7 @@ function rcs:send(bits)
     end
   end
   table.insert(delays, SH)
-  table.insert(delays, 10 * (LG + SH))
+  table.insert(delays, 31 * SH)
   gpio.mode(rcs_pin, gpio.OUTPUT)
   gpio.write(rcs_pin, gpio.LOW)
   gpio.serout(rcs_pin, gpio.HIGH, delays, rcs_count, 1)
