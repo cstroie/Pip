@@ -6,7 +6,7 @@ wx_id = "ROXX0003"
 wx_url = "http://wxdata.weather.com/wxdata/weather/local/" .. wx_id .. "?cc=*&unit=m&dayf=3"
 
 -- RCS
-rcs = {"a"}
+rcs = {"a", "b", "c"}
 
 -- Standard modules
 http = require("socket.http")
@@ -124,11 +124,13 @@ if http_code == 200 then
       if lights == true then
         for _, button in pairs(rcs) do
           mqttpubmsg = mqttpubmsg + 1
+          sleep(5)
           client:publish("command/rcs/" .. button, "on", qos, retain)
         end
       elseif lights == false then
         for _, button in pairs(rcs) do
           mqttpubmsg = mqttpubmsg + 1
+          sleep(5)
           client:publish("command/rcs/" .. button, "off", qos, retain)
         end
       end
