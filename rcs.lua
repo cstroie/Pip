@@ -12,6 +12,7 @@ rcs.ACTIVE = false
 function rcs:send(bits)
   -- rc.send(rcs_pin, bits, rcs_bits, rcs_pl, rcs_proto, rcs_count)
   if not self.ACTIVE then
+    self.ACTIVE = true
     debug("RCS code: " .. bits)
     local delays = {}
     local SH, LG
