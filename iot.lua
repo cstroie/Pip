@@ -25,6 +25,16 @@ function iot:init()
       local root, trunk, branch = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
       if root == "wx" and trunk == wx_station then
         wx:weather(branch, msg)
+      elseif root == "sensor" and trunk == "outdoor" then
+        if branch == "temperature" then
+          OUT_T = string.match(msg, '^([^.]+)')
+        elseif branch == "humidity" then
+          OUT_H = string.match(msg, '^([^.]+)')
+        elseif branch == "sealevel" then
+          OUT_P = string.match(msg, '^([^.]+)')
+        elseif branch == "dewpoint" then
+          OUT_D = string.match(msg, '^([^.]+)')
+        end
       elseif root == "command" then
         if trunk == "rcs" then
           local rcs = require("rcs")
@@ -60,6 +70,7 @@ function iot:connect()
     function(client)
       debug("IoT initial connection")
       self.connected = true
+      --self.client:subscribe({["wx/#"] = 1, ["sensor/outdoor/#"] = 1, ["command/#"] = 1})
       self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
       local ssid = wifi.sta.getconfig()
       local ip, nm, gw = wifi.sta.getip()
