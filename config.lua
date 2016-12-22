@@ -15,6 +15,10 @@ lcd_scl = 2      -- GPIO4
 lcd_dev = 0x27   -- I2C Address
 lcd_bl  = true   -- Backlight
 
+-- PIR
+pir_pin = 5
+pir_interval = 300
+
 -- NTP server
 ntp_server = "0.europe.pool.ntp.org"
 ntp_interval = "765"
