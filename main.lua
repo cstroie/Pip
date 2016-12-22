@@ -45,25 +45,31 @@ dht11:init()
 vdd = require("vdd")
 -- Wireless
 wl = require("wl")
-
--- Global debug flag
-DEBUG = false
+-- PIR
+pir = require("pir")
+pir:init()
+-- Outdoor
+--outdoor = require("outdoor")
 
 -- Rotate screens
 scridx = 0
 
 function show_screen(idx)
   local result
-  if     idx == 1 then result = clock:datetime()
+  if     idx == 1 then result = false --clock:datetime()
   elseif idx == 2 then result = wl.show()
   elseif idx == 3 then result = dht11:bigtemp()
   elseif idx == 4 then result = dht11:bighmdt()
-  elseif idx == 5 then result = wx:now()
-  elseif idx == 6 then result = wx:today()
-  elseif idx == 7 then result = wx:tomorrow()
-  elseif idx == 8 then result = wx:sun()
-  elseif idx == 9 then result = wx:moon()
-  elseif idx == 10 then result = vdd:show()
+  elseif idx == 5 then result = false --outdoor:bigtemp()
+  elseif idx == 6 then result = false --outdoor:bigdew()
+  elseif idx == 7 then result = false --outdoor:bigpress()
+  elseif idx == 8 then result = false --outdoor:bighmdt()
+  elseif idx == 9 then result = wx:now()
+  elseif idx == 10 then result = wx:today()
+  elseif idx == 11 then result = wx:tomorrow()
+  elseif idx == 12 then result = wx:sun()
+  elseif idx == 13 then result = wx:moon()
+  elseif idx == 14 then result = false --vdd:show()
   else
     result = clock:bigclock()
     return nil
