@@ -10,15 +10,6 @@ function debug(...)
   if DEBUG then print(...) end
 end
 
--- LCD Screens dispatcher
-SCR = {}
-function dispatch(idx)
-  if SCR[idx] then
-    SCR[idx]()
-  end
-end
-
-
 -- Use ADC to read Vdd
 if adc.force_init_mode(adc.INIT_VDD33) then node.restart() end
 -- LCD display
@@ -28,11 +19,8 @@ lcd:screen(wifi.sta.gethostname(), string.gsub(wifi.sta.getmac(), ":", ""), "c")
 -- Radio command
 rcs = require("rcs")
 unrequire("rcs")
--- The big digital clock
-clock = require("clock")
 -- NTP sync
-ntp = require("ntp")
-ntp:init()
+tmr.alarm(2, 1000 * ntp_interval, tmr.ALARM_AUTO, function() require("ntp").sync() end)
 -- Weather report
 wx = require("wx")
 -- IoT
@@ -41,8 +29,6 @@ iot:init()
 -- Temperature and humidity sensor
 dht11 = require("dht11")
 dht11:init()
--- Power reading
-vdd = require("vdd")
 -- Wireless
 wl = require("wl")
 -- PIR
@@ -56,22 +42,16 @@ scridx = 0
 
 function show_screen(idx)
   local result
-  if     idx == 1 then result = false --clock:datetime()
-  elseif idx == 2 then result = wl.show()
+  if idx == 2 then result = wl.show()
   elseif idx == 3 then result = dht11:bigtemp()
   elseif idx == 4 then result = dht11:bighmdt()
-  elseif idx == 5 then result = false --outdoor:bigtemp()
-  elseif idx == 6 then result = false --outdoor:bigdew()
-  elseif idx == 7 then result = false --outdoor:bigpress()
-  elseif idx == 8 then result = false --outdoor:bighmdt()
   elseif idx == 9 then result = wx:now()
   elseif idx == 10 then result = wx:today()
   elseif idx == 11 then result = wx:tomorrow()
   elseif idx == 12 then result = wx:sun()
   elseif idx == 13 then result = wx:moon()
-  elseif idx == 14 then result = false --vdd:show()
   else
-    result = clock:bigclock()
+    result = require("clock").bigclock()
     return nil
   end
   if result == true then

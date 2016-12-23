@@ -1,9 +1,10 @@
 -- Beeper
+local beep, module = {}, ...
 
 require("config")
-local beep = {}
 
-function beep:onekhz()
+function beep.onekhz()
+  package.loaded[module] = nil
   gpio.mode(beep_pin, gpio.OUTPUT)
   gpio.serout(beep_pin,1,{beep_pls,beep_pls},beep_rpt,1)
 end

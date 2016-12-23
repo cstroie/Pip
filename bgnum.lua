@@ -1,16 +1,12 @@
 -- LCD big numbers and symbols
+local bgnum, module = {}, ...
 
 lcd = require("lcd")
 
-local bgnum = {}
-
-function bgnum:cls()
-  -- Wrapper
-  lcd:cls()
-end
-
-function bgnum:define()
-  -- Define the big digits
+function bgnum.write(text, cols)
+  -- Write the text, big, at columns 'cols'
+  package.loaded[module] = nil
+  -- Define the big digits, if needed
   if BIG_CHARS ~= "bgnum" then
     lcd:defchar(0, "1f1f1f0000000000")
     lcd:defchar(1, "00000000001f1f1f")
@@ -22,35 +18,32 @@ function bgnum:define()
     lcd:defchar(7, "0000000000000000")
     BIG_CHARS = "bgnum"
   end
-end
-
-function bgnum:write(digit, col)
-  -- Write the digit at 'col'
-  if     digit == "0" then lcd:bigwrite("\255\003\255", "\255\004\255", col)
-  elseif digit == "1" then lcd:bigwrite("\000\255\032", "\001\255\001", col)
-  elseif digit == "2" then lcd:bigwrite("\000\002\255", "\255\004\001", col)
-  elseif digit == "3" then lcd:bigwrite("\000\002\255", "\001\004\255", col)
-  elseif digit == "4" then lcd:bigwrite("\255\004\255", "\032\032\255", col)
-  elseif digit == "5" then lcd:bigwrite("\255\002\000", "\001\004\255", col)
-  elseif digit == "6" then lcd:bigwrite("\255\002\000", "\255\004\255", col)
-  elseif digit == "7" then lcd:bigwrite("\000\003\255", "\032\032\255", col)
-  elseif digit == "8" then lcd:bigwrite("\255\002\255", "\255\004\255", col)
-  elseif digit == "9" then lcd:bigwrite("\255\002\255", "\001\004\255", col)
-  elseif digit == "C" then lcd:bigwrite("\255\003\000", "\255\004\001", col)
-  elseif digit == "-" then lcd:bigwrite("\032\001\001", "\032\032\032", col)
-  elseif digit == " " then lcd:bigwrite("\032\032\032", "\032\032\032", col)
-  elseif digit == ":" then lcd:bigwrite("\005\006", "\005\006", col)
-  elseif digit == "." then lcd:bigwrite("\032\032", "\005\006", col)
-  elseif digit == "'" then lcd:bigwrite("\005\006", "\032\032", col)
-  elseif digit == "%" then lcd:bigwrite("\005\006\001\000", "\001\000\005\006", col)
-  end
-end
-
-function bgnum:bigwrite(text, cols)
-  -- Write the text, big, at columns 'cols'
+  -- Define the composing chars
+  local data = {}
+  data["0"] = {"\255\003\255", "\255\004\255"}
+  data["1"] = {"\000\255\032", "\001\255\001"}
+  data["2"] = {"\000\002\255", "\255\004\001"}
+  data["3"] = {"\000\002\255", "\001\004\255"}
+  data["4"] = {"\255\004\255", "\032\032\255"}
+  data["5"] = {"\255\002\000", "\001\004\255"}
+  data["6"] = {"\255\002\000", "\255\004\255"}
+  data["7"] = {"\000\003\255", "\032\032\255"}
+  data["8"] = {"\255\002\255", "\255\004\255"}
+  data["9"] = {"\255\002\255", "\001\004\255"}
+  data["C"] = {"\255\003\000", "\255\004\001"}
+  data["-"] = {"\032\001\001", "\032\032\032"}
+  data[" "] = {"\032\032\032", "\032\032\032"}
+  data[":"] = {"\005\006", "\005\006"}
+  data["."] = {"\032\032", "\005\006"}
+  data["'"] = {"\005\006", "\032\032"}
+  data["%"] = {"\005\006\001\000", "\001\000\005\006"}
+  -- Write each digit at specific column
+  lcd:cls()
   for idx,col in ipairs(cols) do
-    self:write(text:sub(idx, idx), col)
+    local char = text:sub(idx, idx)
+    lcd:bigwrite(data[char][1], data[char][2], col)
   end
+  return true
 end
 
 return bgnum

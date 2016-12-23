@@ -1,9 +1,8 @@
 -- Get temperature and humidity using DHT11
+local dht11, module = {}, ...
 
 require("config")
 iot = require("iot")
-
-local dht11 = {}
 
 function dht11:read(pin)
   -- Read the DHT11 sensor
@@ -20,12 +19,7 @@ function dht11:bigtemp()
   local result = false
   if self.temp then
     local text = string.format("% 3d'C", self.temp)
-    bgnum = require("bgnum")
-    bgnum:define()
-    bgnum:cls()
-    bgnum:bigwrite(text, {0,4,8,11,13})
-    unrequire("bgnum")
-    result = true
+    result = require("bgnum").write(text, {0,4,8,11,13})
   end
   return result
 end
@@ -35,12 +29,7 @@ function dht11:bighmdt()
   local result = false
   if self.hmdt then
     local text = string.format("% 3d%%", self.hmdt)
-    bgnum = require("bgnum")
-    bgnum:define()
-    bgnum:cls()
-    bgnum:bigwrite(text, {0,4,8,12})
-    unrequire("bgnum")
-    result = true
+    result = require("bgnum").write(text, {0,4,8,12})
   end
   return result
 end
