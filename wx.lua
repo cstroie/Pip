@@ -13,7 +13,7 @@ function wx:weather(id, msg)
   self.wthr[id] = {ln1 = ln1, ln2 = ln2}
   if     id == "ton" then self.wthr["tod"] = nil
   elseif id == "tod" then self.wthr["ton"] = nil
-  elseif id == "tmz" then timezone = tonumber(ln2) end
+  elseif id == "tmz" then TZ = tonumber(ln2) end
 end
 
 function wx:now()
