@@ -45,7 +45,7 @@ beep_rpt = 100
 
 -- RCS
 rcs_pin = 3
-rcs_pl = 320
+rcs_pl = 250
 rcs_bits = 24
 rcs_proto = 1
 rcs_count = 4
