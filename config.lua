@@ -2,6 +2,7 @@
 
 -- Device name
 NODENAME = "NodeMCU"
+TZ = 2
 
 -- WiFi
 wl_ap = {}
@@ -22,7 +23,6 @@ pir_interval = 300
 -- NTP server
 ntp_server = "0.europe.pool.ntp.org"
 ntp_interval = "765"
-timezone = 2
 
 -- DHT pin
 dht11_pin = 4
