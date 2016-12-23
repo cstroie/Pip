@@ -1,7 +1,6 @@
 -- Scan and connect to WiFi
 
 require("config")
-ntp = require("ntp")
 wx = require("wx")
 iot = require("iot")
 lcd = require("lcd")
@@ -62,7 +61,7 @@ function wl:check()
   else
     wl.check_counter = wl_tries
     wl:show()
-    ntp:sync()
+    require("ntp").sync()
     iot:connect()
   end
 end
