@@ -74,10 +74,7 @@ function wx:moon()
       w2 = "Moon"
     end
     lcd:screen(w1, w2)
-    bgmoon = require("bgmoon")
-    bgmoon:write(ph, 12)
-    unrequire("bgmoon")
-    result = true
+    result = require("bgmoon").write(ph, 12)
   end
   return result
 end
