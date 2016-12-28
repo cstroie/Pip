@@ -1,19 +1,34 @@
 -- MQTT integration for IoT
 
 require("config")
-wx = require("wx")
 
 local iot = {}
 iot.connected = false
-iot.queue = {}
-iot.mqueue = {}
 
 function iot:init()
-  self.client = mqtt.Client(iot_id, 120, iot_user, iot_pass, 1)
+  self.client = mqtt.Client(CFG.IOT.id, 120, CFG.IOT.user, CFG.IOT.pass, 1)
   self.client:lwt("lwt", NODENAME .. " is offline", 0, 0)
   self.client:on("connect", function(client)
     debug("IoT connected")
     self.connected = true
+    self.client:subscribe({["command/" .. NODENAME:lower() .. "/#"] = 1})
+    local ssid = wifi.sta.getconfig()
+    local ip, nm, gw = wifi.sta.getip()
+    local topmsg = {hostname = wifi.sta.gethostname(),
+                    mac = wifi.sta.getmac(),
+                    ssid = ssid,
+                    rssi = wifi.sta.getrssi(),
+                    ip = ip,
+                    gw = gw}
+    self:mpub({wifi = topmsg}, 1, 1, "report/" .. NODENAME:lower())
+    local sec, usec = rtctime.get()
+    if sec ~= 0 then
+      local tm = rtctime.epoch2cal(sec + TZ * 3600)
+      local ts = string.format("%04d.%02d.%02d %02d:%02d:%02d",
+                                tm["year"], tm["mon"], tm["day"],
+                                tm["hour"], tm["min"], tm["sec"])
+      self:pub("report/" .. NODENAME:lower() .. "/time", ts, 1, 1)
+    end
   end)
   self.client:on("offline", function(client)
     debug("IoT offline")
@@ -23,29 +38,17 @@ function iot:init()
     if msg then
       debug("IoT " .. topic .. ": " .. msg)
       local root, trunk, branch = string.match(topic, '^([^/]+)/([^/]+)/([^/]+)')
-      if root == "wx" and trunk == wx_station then
-        wx:weather(branch, msg)
-      elseif root == "command" then
-        if trunk == "rcs" then
-          local rcs = require("rcs")
-          rcs:button(branch, msg)
-          unrequire("rcs")
-        elseif trunk == NODENAME then
+      if root == "command" then
+        if trunk:lower() == NODENAME:lower() then
           if branch == "restart" then
             node.restart()
           elseif branch == "debug" then
             DEBUG = (msg == "on") and true or false
           elseif branch == "timezone" then
-            timezone = msg
+            TZ = tonumber(msg)
           elseif branch == "ntpsync" then
-            local server = msg and msg or ntp_server
+            local server = msg and msg or CFG.NTP.server
             sntp.sync(server)
-          elseif branch == "beep" then
-            local beep = require("beep")
-            beep:onekhz()
-            unrequire("beep")
-          elseif branch == "light" then
-            lcd_bl = (msg == "on") and true or false
           end
         end
       end
@@ -54,21 +57,12 @@ function iot:init()
 end
 
 function iot:connect()
-  if wifi.sta.status() == 5 then
+  if wifi.sta.status() == wifi.STA_GOTIP then
     self.client:close()
-    self.client:connect(iot_server, iot_port, 0, 1,
+    self.client:connect(CFG.IOT.server, CFG.IOT.port, CFG.IOT.ssl, CFG.IOT.auto,
     function(client)
       debug("IoT initial connection")
       self.connected = true
-      self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
-      local ssid = wifi.sta.getconfig()
-      local ip, nm, gw = wifi.sta.getip()
-      local topmsg = {hostname = wifi.sta.gethostname(), mac = wifi.sta.getmac(),
-                      ssid = ssid, rssi = wifi.sta.getrssi(), ip = ip, gw = gw}
-      local sec, usec = rtctime.get()
-      iot:mpub({wifi = topmsg, time = sec}, 1, 1, "report/" .. NODENAME)
-      --for k,v in pairs(iot.queue) do iot:pub(unpack(v)) end
-      --for k,v in pairs(iot.mqueue) do iot:mpub(unpack(v)) end
     end,
     function(client, reason)
       debug("IoT failed: " .. reason)
@@ -82,23 +76,23 @@ end
 function iot:pub(topic, msg, qos, ret)
   -- Publish the message to a topic
   if not self.connected then
-    --table.insert(iot.queue, {topic, msg, qos, ret})
     self:connect()
-  elseif wifi.sta.status() == 5 then
+  elseif wifi.sta.status() == wifi.STA_GOTIP then
     qos = qos and qos or 0
     ret = ret and ret or 0
     msg = msg or ""
     debug("IoT publish: " .. topic .. ": ", msg)
     self.client:publish(topic, msg, qos, ret)
+  else
+    self.connected = false
   end
 end
 
 function iot:mpub(topmsg, qos, ret, btop)
   -- Publish the messages to their topics
   if not self.connected then
-    --table.insert(iot.mqueue, {topmsg, qos, ret, btop})
     self:connect()
-  elseif wifi.sta.status() == 5 then
+  elseif wifi.sta.status() == wifi.STA_GOTIP then
     qos = qos and qos or 0
     ret = ret and ret or 0
     btop = btop:sub(#btop,#btop) ~= "/" and btop .. "/" or btop
@@ -111,6 +105,8 @@ function iot:mpub(topmsg, qos, ret, btop)
         self.client:publish(btop .. topic, msg, qos, ret)
       end
     end
+  else
+    self.connected = false
   end
 end
 
