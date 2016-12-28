@@ -10,7 +10,7 @@ function th:thermo()
   self.cnt = self.cnt + 1
   self.acc = self.acc + adc.read(0)
   if self.cnt >= self.max then
-    iot:pub("sensor/outdoor/temperature", self.acc / self.cnt)
+    iot:pub("sensor/outdoor/thermistor", self.acc / self.cnt)
     iot:mpub({heap = node.heap(), uptime = tmr.time()}, 0, 0, "report/" .. NODENAME)
     self.cnt = 0
     self.acc = 0
