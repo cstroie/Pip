@@ -37,8 +37,13 @@ end
 function dht11:pub()
   -- MQTT publish telemetry data
   dht11:read()
-  iot:mpub({temperature = self.temp, humidity = self.hmdt}, 0, 0, "sensor/indoor/")
-  iot:mpub({vdd = adc.readvdd33(), heap = node.heap(), uptime = tmr.time()}, 0, 0, "report/" .. NODENAME)
+  iot:mpub({temperature = self.temp,
+            humidity = self.hmdt},
+            0, 0, "sensor/indoor/")
+  iot:mpub({vdd = adc.readvdd33(),
+            heap = node.heap(),
+            uptime = tmr.time()},
+            0, 0, "report/" .. NODENAME:lower())
 end
 
 function dht11:init()

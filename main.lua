@@ -17,8 +17,7 @@ lcd = require("lcd")
 lcd:init()
 lcd:screen(wifi.sta.gethostname(), string.gsub(wifi.sta.getmac(), ":", ""), "c")
 -- Radio command
-rcs = require("rcs")
-unrequire("rcs")
+require("rcs").init()
 -- NTP sync
 tmr.alarm(2, 1000 * ntp_interval, tmr.ALARM_AUTO, function() require("ntp").sync() end)
 -- Weather report
@@ -42,14 +41,15 @@ scridx = 0
 
 function show_screen(idx)
   local result
-  if idx == 2 then result = wl.show()
-  elseif idx == 3 then result = dht11:bigtemp()
-  elseif idx == 4 then result = dht11:bighmdt()
-  elseif idx == 9 then result = wx:now()
-  elseif idx == 10 then result = wx:today()
-  elseif idx == 11 then result = wx:tomorrow()
-  elseif idx == 12 then result = wx:sun()
-  elseif idx == 13 then result = wx:moon()
+  print(idx, node.heap())
+  if     idx == 1 then result = wl.show()
+  elseif idx == 2 then result = dht11:bigtemp()
+  elseif idx == 3 then result = dht11:bighmdt()
+  --elseif idx == 4 then result = wx:now()
+  elseif idx == 4 then result = wx:today()
+  elseif idx == 5 then result = wx:tomorrow()
+  elseif idx == 6 then result = wx:sun()
+  elseif idx == 7 then result = wx:moon()
   else
     result = require("clock").bigclock()
     return nil

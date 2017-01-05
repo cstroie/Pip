@@ -116,6 +116,7 @@ function lcd:init()
   -- Init the LCD (tested on 2x16)
   i2c.setup(lcd_id, lcd_sda, lcd_scl, i2c.SLOW)
   lcd:send(0, 0x33, 0x32, 0x28, 0x0c, 0x06)
+  lcd:cls()
 end
 
 return lcd

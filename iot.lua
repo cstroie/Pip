@@ -6,31 +6,37 @@ wx = require("wx")
 local iot = {}
 iot.connected = false
 
+function iot:sub()
+  --self.client:subscribe({["wx/#"] = 1, ["sensor/outdoor/#"] = 1, ["command/#"] = 1})
+  self.client:subscribe("wx/" .. wx_station .. "/#", 1)
+  self.client:subscribe("command/" .. NODENAME:lower() .. "/#", 1)
+  self.client:subscribe("command/rcs/#", 1)
+  local ssid = wifi.sta.getconfig()
+  local ip, nm, gw = wifi.sta.getip()
+  local topmsg = {hostname = wifi.sta.gethostname(),
+                  mac = wifi.sta.getmac(),
+                  ssid = ssid,
+                  rssi = wifi.sta.getrssi(),
+                  ip = ip,
+                  gw = gw}
+  self:mpub({wifi = topmsg}, 1, 1, "report/" .. NODENAME:lower())
+  local sec, usec = rtctime.get()
+  if sec ~= 0 then
+    local tm = rtctime.epoch2cal(sec + TZ * 3600)
+    local ts = string.format("%04d.%02d.%02d %02d:%02d:%02d",
+                              tm["year"], tm["mon"], tm["day"],
+                              tm["hour"], tm["min"], tm["sec"])
+    self:pub("report/" .. NODENAME:lower() .. "/time", ts, 1, 1)
+  end
+end
+
 function iot:init()
   self.client = mqtt.Client(iot_id, 120, iot_user, iot_pass, 1)
   self.client:lwt("lwt", NODENAME .. " is offline", 0, 0)
   self.client:on("connect", function(client)
     debug("IoT connected")
     self.connected = true
-    --self.client:subscribe({["wx/#"] = 1, ["sensor/outdoor/#"] = 1, ["command/#"] = 1})
-    self.client:subscribe({["wx/#"] = 1, ["command/#"] = 1})
-    local ssid = wifi.sta.getconfig()
-    local ip, nm, gw = wifi.sta.getip()
-    local topmsg = {hostname = wifi.sta.gethostname(),
-                    mac = wifi.sta.getmac(),
-                    ssid = ssid,
-                    rssi = wifi.sta.getrssi(),
-                    ip = ip,
-                    gw = gw}
-    self:mpub({wifi = topmsg}, 1, 1, "report/" .. NODENAME:lower())
-    local sec, usec = rtctime.get()
-    if sec ~= 0 then
-      local tm = rtctime.epoch2cal(sec + TZ * 3600)
-      local ts = string.format("%04d.%02d.%02d %02d:%02d:%02d",
-                                tm["year"], tm["mon"], tm["day"],
-                                tm["hour"], tm["min"], tm["sec"])
-      self:pub("report/" .. NODENAME:lower() .. "/time", ts, 1, 1)
-    end
+    self:sub()
   end)
   self.client:on("offline", function(client)
     debug("IoT offline")
@@ -83,10 +89,7 @@ function iot:connect()
     function(client)
       debug("IoT initial connection")
       self.connected = true
-    end,
-    function(client, reason)
-      debug("IoT failed: " .. reason)
-      self.connected = false
+      self:sub()
     end)
   else
     self.connected = false

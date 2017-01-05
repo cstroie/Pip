@@ -49,7 +49,8 @@ function wl:check()
   -- Check the WiFi connectivity and try to identify an AP
   if wifi.sta.status() ~= 5 then
     if wl.check_counter > 0 then
-      lcd:screen(string.format("WiFi wait... % 3d", wl.check_counter), wl.status[wifi.sta.status()])
+      lcd:writeline(string.format("WiFi wait... % 3d", wl.check_counter), 1)
+      lcd:writeline(wl.status[wifi.sta.status()], 2)
       wl.check_counter = wl.check_counter - 1
       tmr.start(1)
     else

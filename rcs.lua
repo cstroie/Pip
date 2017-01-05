@@ -20,21 +20,25 @@ function rcs.button(btn, cmd, dip)
     else
       -- DIP switches
       local dip_code = 0x00
-      for k, v in ipairs(self.SWITCHES) do
+      for k, v in ipairs(rcs.SWITCHES) do
         if not bit.isset(dip, k - 1) then dip_code = dip_code + v end
       end
       -- Code
       local code = rcs[cmd][btn]
       if code then
         rc.send(rcs_pin, code + dip_code, rcs_bits, rcs_pl, rcs_proto, rcs_count)
+        --rfswitch.send(rcs_proto, rcs_pl, rcs_count, rcs_pin, code + dip_code, rcs_bits)
       end
     end
   end
 end
 
--- Init TX
-gpio.mode(rcs_pin, gpio.OUTPUT)
-gpio.write(rcs_pin, gpio.LOW)
+function rcs.init()
+  -- Init TX
+  package.loaded[module] = nil
+  gpio.mode(rcs_pin, gpio.OUTPUT)
+  gpio.write(rcs_pin, gpio.LOW)
+end
 
 return rcs
 -- vim: set ft=lua ai ts=2 sts=2 et sw=2 sta nowrap nu :
