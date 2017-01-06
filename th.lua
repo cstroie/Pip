@@ -13,6 +13,7 @@ function th:thermo()
   if self.cnt >= self.max then
     iot:pub("sensor/outdoor/thermistor", self.acc / self.cnt)
     iot:mpub({heap = node.heap(),
+              rssi = wifi.sta.getrssi(),
               uptime = tmr.time()},
               0, 0, "report/" .. NODENAME:lower())
     self.cnt = 0
