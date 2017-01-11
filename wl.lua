@@ -2,12 +2,10 @@
 
 require("config")
 ntp = require("ntp")
-wx = require("wx")
 iot = require("iot")
-lcd = require("lcd")
 
 local wl = {}
-wl.check_counter = wl_tries
+wl.try = CFG.WL.tries
 wl.status = {"Idle", "Connecting", "Wrong password", "AP not found", "Failed", "Connected"}
 
 function wl:show()
@@ -16,17 +14,16 @@ function wl:show()
   local ssid, password, bssid_set, bssid = wifi.sta.getconfig()
   local ip, nm, gw = wifi.sta.getip()
   if ssid and ip then
-    lcd:screen(string.format("WiFi % 11s", ssid), string.format("% 16s", ip))
+    debug(wifi.sta.gethostname(), ssid, wifi.sta.getrssi(), ip, nm, gw)
     result = true
   end
-  debug(wifi.sta.gethostname(), ssid, wifi.sta.getrssi(), ip, nm, gw)
   return result
 end
 
 function wl:connect(ssid)
   -- Try to connect and start the watchdog
-  lcd:screen("WiFi connecting", "to " .. ssid)
-  wifi.sta.config(ssid, wl_ap[ssid])
+  debug("WiFi connecting to " .. ssid)
+  wifi.sta.config(ssid, CFG.WL.AP[ssid])
   tmr.start(1)
 end
 
@@ -35,11 +32,11 @@ function wl.scan(lst)
   local ap
   for ssid, v in pairs(lst) do
     authmode, rssi, bssid, channel = string.match(v, "(%d),(-?%d+),(%x%x:%x%x:%x%x:%x%x:%x%x:%x%x),(%d+)")
-    debug("  " .. ssid, rssi .. " dBm")
-    if wl_ap[ssid] then ap = ssid end
+    debug("  " .. ssid .. " (" .. rssi .. " dBm" .. ")")
+    if CFG.WL.AP[ssid] then ap = ssid end
   end
   if ap then
-    wl:connect(ap)
+    self:connect(ap)
   else
     debug("No known WiFi.")
     -- TODO SoftAP mode
@@ -48,20 +45,21 @@ end
 
 function wl:check()
   -- Check the WiFi connectivity and try to identify an AP
-  if wifi.sta.status() ~= 5 then
-    if wl.check_counter > 0 then
-      lcd:screen(string.format("WiFi wait... % 3d", wl.check_counter), wl.status[wifi.sta.status()])
-      wl.check_counter = wl.check_counter - 1
+  if wifi.sta.status() ~= wifi.STA_GOTIP then
+    if self.try > 0 then
+      debug(string.format("WiFi wait... % 3d", self.try), self.status[wifi.sta.status()])
+      self.try = self.try - 1
       tmr.start(1)
     else
-      lcd:screen("WiFi scanning...", "")
-      wl.check_counter = wl_tries
+      debug("WiFi scanning...", "")
+      self.try = CFG.WL.tries
       wifi.setmode(wifi.STATION)
-      wifi.sta.getap(wl.scan)
+      -- TODO self
+      wifi.sta.getap(self.scan)
     end
   else
-    wl.check_counter = wl_tries
-    wl:show()
+    self.try = CFG.WL.tries
+    self:show()
     ntp:sync()
     iot:connect()
   end

@@ -9,19 +9,29 @@ function th:thermo()
   -- Read the thermistor and send an average
   self.cnt = self.cnt + 1
   self.acc = self.acc + adc.read(0)
+  debug("Thermistor reading " .. self.cnt, self.acc)
   if self.cnt >= self.max then
     iot:pub("sensor/outdoor/thermistor", self.acc / self.cnt)
+<<<<<<< HEAD
     iot:mpub({heap = node.heap(), uptime = tmr.time()}, 0, 0, "report/" .. NODENAME)
+=======
+    iot:mpub({heap = node.heap(),
+              rssi = wifi.sta.getrssi(),
+              uptime = tmr.time()},
+              0, 0, "report/" .. NODENAME:lower())
+>>>>>>> 26e07fa4f2a150d9a66fbeb46d77f021e688a45d
     self.cnt = 0
     self.acc = 0
+    tmr.interval(3, 1000 * CFG.TH.interval)
   else
-    tmr.start(3)
+    tmr.interval(3, 1000)
   end
+  tmr.start(3)
 end
 
 function th:init()
   -- Reading timer
-  tmr.register(3, 1000, tmr.ALARM_SEMI, function() th:thermo() end)
+  tmr.alarm(3, 1000 * CFG.TH.interval, tmr.ALARM_SEMI, function() th:thermo() end)
 end
 
 return th
