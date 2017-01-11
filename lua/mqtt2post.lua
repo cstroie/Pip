@@ -52,10 +52,10 @@ if mosquitto ~= nil then
       ts_wxmon:collect("field4", payload)
     elseif topic == "report/pip/uptime" then
       ts_wxmon:collect("field5", payload)
-    elseif topic == "report/pip/rssi" then
-      ts_wxmon:collect("field6", payload)
       ts_wxmon:post(TS_WXMON_KEY)
       ts_wxmon:clear()
+    elseif topic == "report/pip/rssi" then
+      ts_wxmon:collect("field6", payload)
 
     -- Pop
     --elseif topic == "report/pop/uptime" then
