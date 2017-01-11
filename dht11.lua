@@ -42,6 +42,7 @@ function dht11:pub()
             0, 0, "sensor/indoor/")
   iot:mpub({vdd = adc.readvdd33(),
             heap = node.heap(),
+            rssi = wifi.sta.getrssi(),
             uptime = tmr.time()},
             0, 0, "report/" .. NODENAME:lower())
 end
