@@ -46,16 +46,16 @@ if mosquitto ~= nil then
     elseif topic == "sensor/indoor/humidity" then
       ts_wxmon:collect("field2", payload)
       stathat.ez_value(STATHAT_KEY, "Indoor Humidity", payload);
-    elseif topic == "report/pip/vdd" then
+    elseif topic == "report/wxmon/vcc" then
       ts_wxmon:collect("field3", payload)
-    elseif topic == "report/pip/heap" then
+    elseif topic == "report/wxmon/heap" then
       ts_wxmon:collect("field4", payload)
-    elseif topic == "report/pip/uptime" then
+    elseif topic == "report/wxmon/uptime" then
       ts_wxmon:collect("field5", payload)
+    elseif topic == "report/wxmon/wifi/rssi" then
+      ts_wxmon:collect("field6", payload)
       ts_wxmon:post(TS_WXMON_KEY)
       ts_wxmon:clear()
-    elseif topic == "report/pip/rssi" then
-      ts_wxmon:collect("field6", payload)
 
     -- Pop
     --elseif topic == "report/pop/uptime" then
