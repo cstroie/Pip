@@ -73,7 +73,7 @@ if mosquitto ~= nil then
     elseif topic == "sensor/outdoor/dewpoint" then
       ts_wxsta:collect("field3", payload)
       ubidots:collect("dewpoint", payload)
-    elseif topic == "sensor/outdoor/sealevel" then
+    elseif topic == "sensor/outdoor/pressure" then
       ts_wxsta:collect("field4", payload)
       ubidots:collect("pressure", payload)
     elseif topic == "sensor/outdoor/illuminance" then
@@ -83,11 +83,11 @@ if mosquitto ~= nil then
       ts_wxsta:collect("field6", payload)
     elseif topic == "sensor/outdoor/infrared" then
       ts_wxsta:collect("field7", payload)
-    elseif topic == "report/wxstation/rssi" then
+    elseif topic == "report/wxsta/rssi" then
       ts_wxsta:collect("field8", payload)
       ts_wxsta:post(TS_WXSTA_KEY)
       ts_wxsta:clear()
-    elseif topic == "report/wxstation/vdd" then
+    elseif topic == "report/wxsta/vcc" then
       ubidots:collect("vdd", int2float(payload, 3))
       ubidots:post("wxstation", UBIDOTS_TOKEN)
       ubidots:clear()
