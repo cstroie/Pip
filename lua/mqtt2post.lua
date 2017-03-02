@@ -83,7 +83,7 @@ if mosquitto ~= nil then
       ts_wxsta:collect("field6", payload)
     elseif topic == "sensor/outdoor/infrared" then
       ts_wxsta:collect("field7", payload)
-    elseif topic == "report/wxsta/rssi" then
+    elseif topic == "report/wxsta/wifi/rssi" then
       ts_wxsta:collect("field8", payload)
       ts_wxsta:post(TS_WXSTA_KEY)
       ts_wxsta:clear()
