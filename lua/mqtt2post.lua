@@ -12,6 +12,8 @@ ts_wxsta = require("thingspeak")
 ts_nano = require("thingspeak")
 stathat = require("stathat")
 ubidots = require("ubidots")
+aprs = require("aprs")
+zambretti = require("zambretti")
 
 -- Mosquitto
 local rstatus, rmodule = pcall(require, 'mosquitto')
@@ -66,18 +68,25 @@ if mosquitto ~= nil then
       --local R = 98.2/(1024/payload - 1)
       --local T = 1/(1/298.15 + math.log(R/10.63)/3986)-273.15
       ts_wxsta:collect("field1", payload)
+      aprs:collect("temp", payload)
       ubidots:collect("temperature", payload)
     elseif topic == "sensor/outdoor/humidity" then
       ts_wxsta:collect("field2", payload)
+      aprs:collect("hmdt", payload)
       ubidots:collect("humidity", payload)
     elseif topic == "sensor/outdoor/dewpoint" then
       ts_wxsta:collect("field3", payload)
       ubidots:collect("dewpoint", payload)
-    elseif topic == "sensor/outdoor/pressure" then
+    elseif topic == "sensor/outdoor/sealevel" then
       ts_wxsta:collect("field4", payload)
+      ts_wxsta:collect("status", zambretti:weather(payload, 3))
       ubidots:collect("pressure", payload)
+      aprs:collect("pres", payload)
+      aprs:post()
+      aprs:clear()
     elseif topic == "sensor/outdoor/illuminance" then
       ts_wxsta:collect("field5", payload)
+      aprs:collect("lux", payload)
       ubidots:collect("illuminance", payload)
     elseif topic == "sensor/outdoor/visible" then
       ts_wxsta:collect("field6", payload)

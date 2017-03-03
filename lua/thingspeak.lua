@@ -5,7 +5,9 @@ local http = require("socket.http")
 local thingspeak = {data = {}}
 
 function thingspeak:collect(key, value)
-  self.data[key] = value
+  if value ~= nil then
+    self.data[key] = value
+  end
 end
 
 function thingspeak:clear()
