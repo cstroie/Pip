@@ -10,8 +10,6 @@ http = require("socket.http")
 ts_wxmon = require("thingspeak")
 ts_wxsta = require("thingspeak")
 ts_nano = require("thingspeak")
-stathat = require("stathat")
-ubidots = require("ubidots")
 aprs = require("aprs")
 zambretti = require("zambretti")
 
@@ -40,72 +38,71 @@ if mosquitto ~= nil then
   end
 
   client.ON_MESSAGE = function(mid, topic, payload)
-    print(topic, tonumber(payload))
-    -- Pip
+    local value = tonumber(payload)
+    if value == nil then
+      return
+    end
+
+    print(topic, value)
+
+    -- WxMonitor
     if     topic == "sensor/indoor/temperature" then
-      ts_wxmon:collect("field1", tonumber(payload))
-      stathat.ez_value(STATHAT_KEY, "Indoor Temperature", tonumber(payload))
+      ts_wxmon:collect("field1", value)
     elseif topic == "sensor/indoor/humidity" then
-      ts_wxmon:collect("field2", tonumber(payload))
-      stathat.ez_value(STATHAT_KEY, "Indoor Humidity", tonumber(payload));
+      ts_wxmon:collect("field2", value)
     elseif topic == "report/wxmon/vcc" then
-      ts_wxmon:collect("field3", tonumber(payload))
+      ts_wxmon:collect("field3", value)
     elseif topic == "report/wxmon/heap" then
-      ts_wxmon:collect("field4", tonumber(payload))
+      ts_wxmon:collect("field4", value)
     elseif topic == "report/wxmon/uptime" then
-      ts_wxmon:collect("field5", tonumber(payload))
+      ts_wxmon:collect("field5", value)
     elseif topic == "report/wxmon/wifi/rssi" then
-      ts_wxmon:collect("field6", tonumber(payload))
+      ts_wxmon:collect("field6", value)
       ts_wxmon:post(TS_WXMON_KEY)
       ts_wxmon:clear()
-
-    -- Pop
-    --elseif topic == "report/pop/uptime" then
-    --  ts_wxmon:collect("status", "POP: " .. payload)
 
     -- WxStation
     elseif topic == "sensor/outdoor/temperature" then
       --local R = 98.2/(1024/payload - 1)
       --local T = 1/(1/298.15 + math.log(R/10.63)/3986)-273.15
-      ts_wxsta:collect("field1", tonumber(payload))
-      aprs:collect("temp", tonumber(payload))
-      ubidots:collect("temperature", tonumber(payload))
+      ts_wxsta:collect("field1", value)
+      aprs:collect("temp", value)
     elseif topic == "sensor/outdoor/humidity" then
-      ts_wxsta:collect("field2", tonumber(payload))
-      aprs:collect("hmdt", tonumber(payload))
-      ubidots:collect("humidity", tonumber(payload))
+      ts_wxsta:collect("field2", value)
+      aprs:collect("hmdt", value)
     elseif topic == "sensor/outdoor/dewpoint" then
-      ts_wxsta:collect("field3", tonumber(payload))
-      ubidots:collect("dewpoint", tonumber(payload))
+      ts_wxsta:collect("field3", value)
+      aprs:collect("dewp", value)
     elseif topic == "sensor/outdoor/sealevel" then
-      ts_wxsta:collect("field4", tonumber(payload))
-      ts_wxsta:collect("status", zambretti:weather(tonumber(payload), 60))
-      ubidots:collect("pressure", tonumber(payload))
-      aprs:collect("pres", tonumber(payload))
+      ts_wxsta:collect("field4", value)
+      ts_wxsta:collect("status", zambretti:weather(value, 3600))
+      aprs:collect("pres", value)
     elseif topic == "sensor/outdoor/illuminance" then
-      ts_wxsta:collect("field5", tonumber(payload))
-      aprs:collect("lux", tonumber(payload))
-      aprs:post()
-      aprs:clear()
-      ubidots:collect("illuminance", tonumber(payload))
+      ts_wxsta:collect("field5", value)
+      aprs:collect("lux", value)
     elseif topic == "sensor/outdoor/visible" then
-      ts_wxsta:collect("field6", tonumber(payload))
+      ts_wxsta:collect("field6", value)
+      aprs:collect("visb", value)
     elseif topic == "sensor/outdoor/infrared" then
-      ts_wxsta:collect("field7", tonumber(payload))
+      ts_wxsta:collect("field7", value)
+      aprs:collect("ired", value)
+    elseif topic == "report/wxsta/heap" then
+      aprs:collect("heap", value)
     elseif topic == "report/wxsta/wifi/rssi" then
-      ts_wxsta:collect("field8", tonumber(payload))
+      ts_wxsta:collect("field8", value)
       ts_wxsta:post(TS_WXSTA_KEY)
       ts_wxsta:clear()
+      aprs:collect("rssi", value)
     elseif topic == "report/wxsta/vcc" then
-      ubidots:collect("vdd", int2float(tonumber(payload), 3))
-      ubidots:post("wxstation", UBIDOTS_TOKEN)
-      ubidots:clear()
+      aprs:collect("vcc", value)
+      aprs:post()
+      aprs:clear()
 
     -- Nano
     elseif topic == "sensor/nano/temperature" then
-      ts_nano:collect("field1", tonumber(payload))
+      ts_nano:collect("field1", value)
     elseif topic == "sensor/nano/thermistor" then
-      ts_nano:collect("field2", tonumber(payload))
+      ts_nano:collect("field2", value)
       ts_nano:post(TS_NANO_KEY)
       ts_nano:clear()
     end
