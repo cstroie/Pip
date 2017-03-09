@@ -31,7 +31,7 @@ function aprs:post()
     con:send(text .. "\r\n")
     line = con:receive("*l")
     --print(line)
-    text = CALLSIGN .. "-10" ..
+    text = CALLSIGN .. "-13" ..
            ">APRS,TCPIP*:" ..
            "/" .. os.date("!%d%H%M") .. "z" ..
            LOCATION ..
@@ -39,6 +39,7 @@ function aprs:post()
            "t" .. string.format("%03d", math.floor(tfar)) ..
            "h" .. string.format("%02d",  math.floor(self.data["hmdt"])) ..
            "b" .. string.format("%05d",  math.floor(self.data["pres"] * 10)) ..
+           "L" .. string.format("%03d",  math.floor(self.data["lux"] / 10)) ..
            "xLWX"
     con:send(text .. "\r\n")
     print(text)
