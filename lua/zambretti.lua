@@ -47,6 +47,7 @@ function zambretti:weather(value, maxcount)
   end
   if result ~= nil then
     print("Zambretti: " .. result)
+    result = os.date("%x %X") .. ": " .. result
   end
   return result
 end
