@@ -8,9 +8,9 @@ local zambretti = {}
 
 zambretti.BARO_TOP  = 1050
 zambretti.BARO_BOT  = 950
-zambretti.THRESHOLD = 0.3
-zambretti.MAXCOUNT  = 60
-zambretti.COUNTER   = 0
+zambretti.THRESHOLD = 0.5
+zambretti.DELAY     = 3600
+zambretti.NEXT_TIME = nil
 zambretti.PREVIOUS  = nil
 
 zambretti.FORECAST = {"Settled fine", "Fine weather", "Becoming fine",
@@ -31,19 +31,21 @@ zambretti.STEADY  = {26,26,26,26,26,26,24,24,23,19,16,14,11, 5, 2, 2, 1, 1, 1, 1
 zambretti.FALLING = {26,26,26,26,26,26,26,26,24,24,22,21,18,15, 8, 4, 2, 2, 2, 1, 1, 1}
 
 
-function zambretti:weather(value, maxcount)
+function zambretti:weather(value, delay)
   local result
-  if maxcount == nil then
-    maxcount = self.MAXCOUNT
+  if delay == nil then
+    delay = self.DELAY
   end
   if self.PREVIOUS == nil then
     self.PREVIOUS = value
   end
-  self.COUNTER = self.COUNTER + 1
-  if self.COUNTER >= maxcount then
+  if self.NEXT_TIME == nil then
+    self.NEXT_TIME = os.time() + delay
+  end
+  if os.time() >= self.NEXT_TIME then
     result = self:forecast(value, self.PREVIOUS)
-    self.COUNTER = 0
     self.PREVIOUS = value
+    self.NEXT_TIME = self.NEXT_TIME + delay
   end
   if result ~= nil then
     print("Zambretti: " .. result)
