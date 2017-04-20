@@ -10,8 +10,7 @@ http = require("socket.http")
 ts_wxmon = require("thingspeak")
 ts_wxsta = require("thingspeak")
 ts_nano = require("thingspeak")
-aprs = require("aprs")
-zambretti = require("zambretti")
+wu = require("wu")
 
 -- Mosquitto
 local rstatus, rmodule = pcall(require, 'mosquitto')
@@ -28,6 +27,16 @@ function int2float(x, pr)
     result = string.format("%d.%02d", x, 0)
   end
   return result
+end
+
+function ctof(x)
+  -- Convert C to F
+  return x * 9 / 5 + 32
+end
+
+function hpatoin(x)
+  -- Convert hPa to inHg
+  return x * 0.02952998751
 end
 
 -- MQTT
@@ -48,8 +57,10 @@ if mosquitto ~= nil then
     -- WxMonitor
     if     topic == "sensor/indoor/temperature" then
       ts_wxmon:collect("field1", value)
+      wu:collect("indoortempf", ctof(value))
     elseif topic == "sensor/indoor/humidity" then
       ts_wxmon:collect("field2", value)
+      wu:collect("indoorhumidity", value)
     elseif topic == "report/wxmon/vcc" then
       ts_wxmon:collect("field3", value)
     elseif topic == "report/wxmon/heap" then
@@ -66,37 +77,30 @@ if mosquitto ~= nil then
       --local R = 98.2/(1024/payload - 1)
       --local T = 1/(1/298.15 + math.log(R/10.63)/3986)-273.15
       ts_wxsta:collect("field1", value)
-      aprs:collect("temp", value)
+      wu:collect("tempf", ctof(value))
     elseif topic == "sensor/outdoor/humidity" then
       ts_wxsta:collect("field2", value)
-      aprs:collect("hmdt", value)
+      wu:collect("humidity", value)
     elseif topic == "sensor/outdoor/dewpoint" then
       ts_wxsta:collect("field3", value)
-      aprs:collect("dewp", value)
+      wu:collect("dewptf", ctof(value))
     elseif topic == "sensor/outdoor/sealevel" then
       ts_wxsta:collect("field4", value)
-      ts_wxsta:collect("status", zambretti:weather(value, 3600))
-      aprs:collect("pres", value)
+      wu:collect("baromin", hpatoin(value))
     elseif topic == "sensor/outdoor/illuminance" then
       ts_wxsta:collect("field5", value)
-      aprs:collect("lux", value)
+      wu:collect("solarradiation", value * 0.0079)
     elseif topic == "sensor/outdoor/visible" then
       ts_wxsta:collect("field6", value)
-      aprs:collect("visb", value)
     elseif topic == "sensor/outdoor/infrared" then
       ts_wxsta:collect("field7", value)
-      aprs:collect("ired", value)
     elseif topic == "report/wxsta/heap" then
-      aprs:collect("heap", value)
     elseif topic == "report/wxsta/wifi/rssi" then
       ts_wxsta:collect("field8", value)
       ts_wxsta:post(TS_WXSTA_KEY)
       ts_wxsta:clear()
-      aprs:collect("rssi", value)
     elseif topic == "report/wxsta/vcc" then
-      aprs:collect("vcc", value)
-      aprs:post()
-      aprs:clear()
+      wu:post(WU_ID, WU_PASS)
 
     -- Nano
     elseif topic == "sensor/nano/temperature" then
